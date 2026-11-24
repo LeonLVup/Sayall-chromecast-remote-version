@@ -1,0 +1,1893 @@
+diff --git a/Package.swift b/Package.swift
+index 73e920b..ecce647 100644
+--- a/Package.swift
++++ b/Package.swift
+@@ -243,6 +243,8 @@ if buttonProfilesTestAccessEnabled && privateArtifactsAvailable {
+     fatalError("free button profile test access excludes private membership artifacts")
+ }
+ let chromecastEnabled = privateChromecastEnabled || !(chromecastPackagePath ?? "").isEmpty
++let publicChromecastVoiceEnabled = ProcessInfo.processInfo.environment["SAYALL_PUBLIC_CHROMECAST_VOICE"] == "1"
++    && !chromecastEnabled && !privateArtifactsAvailable
+ let macOSPlatform: SupportedPlatform = ProcessInfo.processInfo.environment["RELEASE_VARIANT"] == "intel"
+     ? .macOS(.v13)
+     : .macOS(.v14)
+@@ -329,9 +331,12 @@ if profilesAuthorizedAccessAvailable {
+ if siriRemoteEnabled {
+     remoteMicSwiftSettings.append(.define("SAYALL_SIRI_REMOTE_ENABLED"))
+ }
+-if chromecastEnabled {
++if chromecastEnabled || publicChromecastVoiceEnabled {
+     remoteMicSwiftSettings.append(.define("SAYALL_CHROMECAST_ENABLED"))
+ }
++if publicChromecastVoiceEnabled {
++    remoteMicSwiftSettings.append(.define("SAYALL_PUBLIC_CHROMECAST_VOICE"))
++}
+ if macRemoteEnabled {
+     remoteMicSwiftSettings.append(.define("SAYALL_MAC_REMOTE_ENABLED"))
+ }
+@@ -455,9 +460,12 @@ if buttonProfilesTestAccessEnabled {
+ if siriRemoteEnabled {
+     remoteMicTestSwiftSettings.append(.define("SAYALL_SIRI_REMOTE_ENABLED"))
+ }
+-if chromecastEnabled {
++if chromecastEnabled || publicChromecastVoiceEnabled {
+     remoteMicTestSwiftSettings.append(.define("SAYALL_CHROMECAST_ENABLED"))
+ }
++if publicChromecastVoiceEnabled {
++    remoteMicTestSwiftSettings.append(.define("SAYALL_PUBLIC_CHROMECAST_VOICE"))
++}
+ if macRemoteEnabled {
+     remoteMicTestSwiftSettings.append(.define("SAYALL_MAC_REMOTE_ENABLED"))
+ }
+diff --git a/Resources/en.lproj/Localizable.strings b/Resources/en.lproj/Localizable.strings
+index edcefc6..8325bd4 100644
+--- a/Resources/en.lproj/Localizable.strings
++++ b/Resources/en.lproj/Localizable.strings
+@@ -136,6 +136,9 @@
+ "chromecast.action.reconnect" = "Reconnect";
+ "chromecast.help.plain" = "The remote microphone sends audio to the selected virtual microphone. It does not use the computer microphone.";
+ "chromecast.mapping.voice.title" = "Voice Button";
++"chromecast.local.title" = "Chromecast Voice Remote";
++"chromecast.local.hold_instruction" = "Hold the voice button below and to the right of the directional pad. Release it when you finish speaking.";
++"chromecast.local.mapping_hint" = "Customize navigation, volume, Home, Mute, and app buttons.";
+ "chromecast.mapping.voice.fixed" = "Voice Input Only";
+ "chromecast.mapping.voice.detail" = "Use the voice button to dictate through the remote microphone. This button cannot be assigned another action.";
+ "chromecast.mapping.photo.missing" = "Chromecast remote image unavailable";
+@@ -254,6 +257,7 @@
+ "action.focus_input" = "Focus Input Field";
+ "action.open_custom_application" = "Open Custom App";
+ "action.toggle_long_recording" = "Toggle Continuous Recording";
++"action.switch_chinese_voice_input_method" = "Switch Between Doubao and WeType";
+ "action.open_remote_mic" = "Open SayAll";
+ "action.open_codex" = "Open Codex";
+ "action.open_workbuddy" = "Open WorkBuddy";
+@@ -1629,3 +1633,6 @@
+ "connection.siri_remote_component.retry_detail" = "The previous installation did not finish. Retry is available; cancelling will not prompt again automatically.";
+ 
+ "connection.siri_remote_component.installing" = "Waiting for administrator authorization…";
++
++"onboarding.chromecast.voice_only" = "Hold the voice button to speak.";
++"onboarding.chromecast.connect" = "If the remote is paired, press any button to wake it. To pair it, hold Back and Home until the LED flashes, then connect in Mac Bluetooth settings.";
+diff --git a/Resources/zh-Hans.lproj/Localizable.strings b/Resources/zh-Hans.lproj/Localizable.strings
+index d0f82bd..846caf8 100644
+--- a/Resources/zh-Hans.lproj/Localizable.strings
++++ b/Resources/zh-Hans.lproj/Localizable.strings
+@@ -136,6 +136,9 @@
+ "chromecast.action.reconnect" = "重新连接";
+ "chromecast.help.plain" = "声音来自遥控器麦克风，传入所选虚拟麦克风；不使用电脑内置麦克风。";
+ "chromecast.mapping.voice.title" = "语音键";
++"chromecast.local.title" = "Chromecast 语音遥控器";
++"chromecast.local.hold_instruction" = "按住方向盘右下方的语音键，说完松开。";
++"chromecast.local.mapping_hint" = "可自定义方向、音量、主页、静音和应用键。";
+ "chromecast.mapping.voice.fixed" = "固定语音输入";
+ "chromecast.mapping.voice.detail" = "用语音键直接使用遥控器麦克风传输语音；该键不能作为普通按键重新配置。";
+ "chromecast.mapping.photo.missing" = "Chromecast 遥控器图片不可用";
+@@ -254,6 +257,7 @@
+ "action.focus_input" = "聚焦输入框";
+ "action.open_custom_application" = "打开自定义 APP";
+ "action.toggle_long_recording" = "切换持续录音";
++"action.switch_chinese_voice_input_method" = "切换豆包与微信输入法";
+ "action.open_remote_mic" = "打开无线麦 SayAll";
+ "action.open_codex" = "打开 Codex";
+ "action.open_workbuddy" = "打开 WorkBuddy";
+@@ -1628,3 +1632,6 @@
+ "connection.siri_remote_component.retry_detail" = "上次安装未完成。可以重试；取消后不会自动重复弹窗。";
+ 
+ "connection.siri_remote_component.installing" = "正在等待管理员授权…";
++
++"onboarding.chromecast.voice_only" = "此版本支持按住语音键说话。";
++"onboarding.chromecast.connect" = "如果 Mac 已配对这只遥控器，按任意键唤醒。未配对时，同时按住返回键和主页键，直到遥控器指示灯闪烁，再在 Mac 的蓝牙设置中连接。";
+diff --git a/Sources/RemoteMic/AppSettings.swift b/Sources/RemoteMic/AppSettings.swift
+index 8b32fdb..982899d 100644
+--- a/Sources/RemoteMic/AppSettings.swift
++++ b/Sources/RemoteMic/AppSettings.swift
+@@ -454,6 +454,12 @@ final class AppSettings: ObservableObject {
+         get { defaults.string(forKey: Keys.lastUserSelectedInputDeviceUID) }
+         set { defaults.set(newValue, forKey: Keys.lastUserSelectedInputDeviceUID) }
+     }
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++    var lastChineseVoiceInputMethod: OnboardingVoiceTool? {
++        get { defaults.string(forKey: "lastChineseVoiceInputMethod").flatMap(OnboardingVoiceTool.init(rawValue:)) }
++        set { defaults.set(newValue?.rawValue, forKey: "lastChineseVoiceInputMethod") }
++    }
++#endif
+     private(set) var lastKnownAudioDeviceUID: String
+ 
+     @Published var customMappingEnabled: Bool {
+diff --git a/Sources/RemoteMic/BridgeAppModel.swift b/Sources/RemoteMic/BridgeAppModel.swift
+index 44f03d1..782f5f4 100644
+--- a/Sources/RemoteMic/BridgeAppModel.swift
++++ b/Sources/RemoteMic/BridgeAppModel.swift
+@@ -918,7 +918,13 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
+     )
+     private lazy var preferredInputSourceMonitor = PreferredInputSourceMonitor(
+         voiceTool: { [weak self] in
+-            self?.settings.onboardingVoiceTool ?? .unselected
++            guard let self else { return .unselected }
++            #if SAYALL_PUBLIC_CHROMECAST_VOICE
++            if self.chromecastVoiceActive || self.chromecastVoiceStopping {
++                return self.chromecastVoiceInputTool
++            }
++            #endif
++            return self.settings.onboardingVoiceTool
+         }
+     )
+     private lazy var voiceInputDestinationCoordinator = VoiceInputDestinationCoordinator(
+@@ -1163,7 +1169,7 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
+     private var loggedChromecastAudioDevice = false
+     /// 设置页展示用。私有包缺失时恒为 `.unavailable`，界面据此隐藏整块内容。
+     @Published private(set) var chromecastStatus: ChromecastLinkStatus =
+-        ChromecastFeatureIntegration.isPackageIncluded ? .disabled : .unavailable
++        ChromecastFeatureIntegration.isAvailable ? .disabled : .unavailable
+     /// 遥控器**自报**的能力位；链路不可用时为空集合。
+     ///
+     /// 界面与语音键驱动都读它（经 `RemoteVoiceCapabilities.resolve`），宿主不再维护第二份型号能力表。
+@@ -1209,6 +1215,9 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
+     private var appliedHIDPermissionSnapshot: HIDPermissionSnapshot?
+     private var terminationObserver: NSObjectProtocol?
+     private var buttonLifecycleObservers: [NSObjectProtocol] = []
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++    private var selectedVoiceInputSourceObserver: NSObjectProtocol?
++#endif
+     private var completedUpdateHIDRecoveryWorkItem: DispatchWorkItem?
+     private var hidMappingRecoveryWorkItem: DispatchWorkItem?
+     private var hidMappingRecoveryAttempt = 0
+@@ -1770,6 +1779,14 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
+     func startIfNeeded() {
+         guard !started else { return }
+         started = true
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++        rememberCurrentChineseVoiceInputMethod()
++        selectedVoiceInputSourceObserver = DistributedNotificationCenter.default().addObserver(
++            forName: OnboardingInputSourceSwitcher.selectedSourceChanged, object: nil, queue: .main
++        ) { [weak self] _ in
++            self?.rememberCurrentChineseVoiceInputMethod()
++        }
++#endif
+         startAudioSubsystem()
+ #if SAYALL_SIRI_REMOTE_ENABLED
+         if settings.siriRemoteEnabled, !settings.siriRemoteNeedsUserAction {
+@@ -1813,6 +1830,12 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
+     }
+ 
+     func stop() {
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++        if let selectedVoiceInputSourceObserver {
++            DistributedNotificationCenter.default().removeObserver(selectedVoiceInputSourceObserver)
++            self.selectedVoiceInputSourceObserver = nil
++        }
++#endif
+         if hidMonitorRebuildWorkItem != nil {
+             AppLogger.shared.write("HID MONITOR REBUILD phase=cancelled reason=app_stop")
+         }
+@@ -8361,6 +8384,9 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
+         } else if profile.model.isAppleSiriRemote {
+             buttons = appleConnected ? .ready : .unknown
+             buttonReason = appleConnected ? "apple_connected" : "apple_profile_not_connected"
++        } else if profile.model.isChromecastRemote, let readiness = chromecastFeature.publicControlReadiness {
++            buttons = readiness
++            buttonReason = "chromecast_public_hid"
+         } else if profile.model.isChromecastRemote {
+             buttons = RemoteFunctionReadiness.chromecastButtons(
+                 cachedPresent: chromecastHIDIsPresent,
+@@ -9333,6 +9359,11 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
+ 
+     @discardableResult
+     private func performInternalAction(_ action: ButtonAction, source: String = "host_action") -> Bool {
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++        if action == .switchChineseVoiceInputMethod {
++            return switchChineseVoiceInputMethod()
++        }
++#endif
+         if action == .openCommonPhrases {
+             cancelPendingCommonPhraseButtonActions()
+             return membershipFeature.openCommonPhrases(source: source)
+@@ -9347,6 +9378,35 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
+         return toggleLongRecording()
+     }
+ 
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++    private func rememberCurrentChineseVoiceInputMethod() {
++        let selected = OnboardingVoiceTool.chromecastTypingTool(
++            activeSourceID: OnboardingInputSourceSwitcher.currentInputSourceID(), fallback: .unselected
++        )
++        guard selected != .unselected, selected != settings.lastChineseVoiceInputMethod else { return }
++        settings.lastChineseVoiceInputMethod = selected
++    }
++
++    private func switchChineseVoiceInputMethod() -> Bool {
++        guard !isStreaming, !chromecastVoiceActive, !chromecastVoiceStopping else {
++            AppLogger.shared.write("VOICE INPUT SWITCH result=ignored reason=voice_active")
++            return false
++        }
++        let target = OnboardingVoiceTool.nextChineseVoiceInputMethod(
++            activeSourceID: OnboardingInputSourceSwitcher.currentInputSourceID(),
++            lastUsed: settings.lastChineseVoiceInputMethod
++        )
++        let result = target.preferredInputSourceID.map {
++            OnboardingInputSourceSwitcher.selectEnabledInputSource(withID: $0)
++        } ?? .unavailable
++        if result == .selected {
++            settings.lastChineseVoiceInputMethod = target
++        }
++        AppLogger.shared.write("VOICE INPUT SWITCH target=\(target.rawValue) result=\(result.rawValue)")
++        return result == .selected
++    }
++#endif
++
+     private func toggleLongRecording() -> Bool {
+         if longRecordingRequested {
+             stopLongRecording(reason: "button_toggle")
+@@ -10714,7 +10774,15 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
+         chromecastFeature.setVoiceMode(effectiveChromecastVoiceMode)
+         // 映射总开关决定 HID 通道是否独占设备：它必须即时生效，否则界面上「已开启映射」
+         // 而系统仍在消费这些按键，用户会以为映射没生效。
++        #if SAYALL_PUBLIC_CHROMECAST_VOICE
++        let permissions = appliedHIDPermissionSnapshot ?? .current
++        chromecastFeature.setControlMappingEnabled(
++            settings.chromecastEnabled && settings.customMappingEnabled &&
++                permissions.inputMonitoringGranted && permissions.accessibilityGranted
++        )
++        #else
+         chromecastFeature.setControlMappingEnabled(settings.customMappingEnabled)
++        #endif
+         if settings.chromecastEnabled {
+             chromecastFeature.start()
+         } else {
+@@ -10733,7 +10801,7 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
+         }
+         chromecastStatus = status
+         refreshChromecastHIDPresence()
+-        AppLogger.shared.write("CHROMECAST LINK state=\(status)")
++        AppLogger.shared.write("CHROMECAST LINK state=\(status.localizationKey)")
+         if case let .connected(displayName) = status {
+             let profileID = ensureChromecastProfile()
+             if let name = RemoteDeviceNamePolicy.observedSystemName(from: displayName) {
+@@ -10795,18 +10863,30 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
+     /// 一次点按的按下时长：与小米蓝牙链路的 `VoiceFnTapSessionController` 保持一致。
+     private static let chromecastFunctionKeyTapDuration: TimeInterval = 0.12
+ 
++    private var chromecastVoiceInputTool: OnboardingVoiceTool {
++        #if SAYALL_PUBLIC_CHROMECAST_VOICE
++        if settings.isOnboardingComplete {
++            return .chromecastTypingTool(
++                activeSourceID: OnboardingInputSourceSwitcher.currentInputSourceID(),
++                fallback: settings.onboardingVoiceTool
++            )
++        }
++        #endif
++        return settings.onboardingVoiceTool
++    }
++
+     /// 当前应使用的驱动方式：由遥控器自己的语音模式 + 目标工具是否支持长按推导（见能力矩阵）。
+     private var chromecastFunctionKeyDrive: ChromecastFunctionKeyDrive {
+         .resolve(
+             voiceMode: effectiveChromecastVoiceMode,
+-            toolSupportsHoldVoiceRecording: settings.onboardingVoiceTool
+-                .supportsHoldVoiceRecording
++            toolSupportsHoldVoiceRecording: chromecastVoiceInputTool.supportsHoldVoiceRecording
+         )
+     }
+ 
+     /// 生效的语音模式：设备**自报**不支持「按一次收音」时，即使设置里存着 toggle 也按「按住说话」执行。
+     /// 这样能力不足的型号不会因为一份历史设置而走进它做不到的路径（设置里的原值保留，不静默改写）。
+     var effectiveChromecastVoiceMode: ChromecastVoiceMode {
++        if ChromecastFeatureIntegration.usesPublicAdapter { return .hold }
+         let declared = chromecastDeclaredCapabilities
+         guard !declared.isEmpty, !declared.contains(.toggleVoiceGesture) else {
+             return settings.chromecastVoiceMode
+@@ -10896,7 +10976,7 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
+             AppLogger.shared.write("CHROMECAST VOICE phase=rejected reason=mac_microphone_busy")
+             return
+         }
+-        guard ChromecastFeatureIntegration.isPackageIncluded, settings.chromecastEnabled else {
++        guard ChromecastFeatureIntegration.isAvailable, settings.chromecastEnabled else {
+             return
+         }
+         if chromecastVoiceStopping {
+diff --git a/Sources/RemoteMic/ChromecastFeatureIntegration.swift b/Sources/RemoteMic/ChromecastFeatureIntegration.swift
+index 20d4d7c..8625e9c 100644
+--- a/Sources/RemoteMic/ChromecastFeatureIntegration.swift
++++ b/Sources/RemoteMic/ChromecastFeatureIntegration.swift
+@@ -6,7 +6,7 @@ import SayAllChromecast
+ 
+ /// Chromecast 链路状态。宿主只依赖这个平台无关的枚举，不接触 CoreBluetooth 或 ATVV 字节。
+ enum ChromecastLinkStatus: Equatable {
+-    /// 私有包未编入本次构建；设置页必须完全隐藏该硬件，且不得报错。
++    /// 本构建没有可用的 Chromecast 后端。
+     case unavailable
+     /// 包已编入但用户未启用。
+     case disabled
+@@ -195,11 +195,10 @@ struct ChromecastRemoteControlEvent: Equatable {
+ 
+ /// Chromecast 硬件接入层。
+ ///
+-/// 隔离保证：本类型与 Siri Remote 接入层互不引用；私有包缺失时全部方法退化为 no-op，
+-/// 宿主的编译、运行和打包都不受影响。
++/// 私有后端与可选的公开后端互斥；两者均缺失时接入层不启动。
+ final class ChromecastFeatureIntegration {
+     static var nativeInputProductIDs: Set<Int> {
+-        #if SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)
++        #if (SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)) || SAYALL_PUBLIC_CHROMECAST_VOICE
+         return [0x9450]
+         #else
+         return []
+@@ -209,6 +208,8 @@ final class ChromecastFeatureIntegration {
+         didSet {
+             #if SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)
+             feature.prepareNativeInput = prepareNativeInput
++            #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++            hidControls.prepareNativeInput = prepareNativeInput
+             #endif
+         }
+     }
+@@ -216,6 +217,8 @@ final class ChromecastFeatureIntegration {
+         didSet {
+             #if SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)
+             feature.restoreNativeInput = restoreNativeInput
++            #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++            hidControls.restoreNativeInput = restoreNativeInput
+             #endif
+         }
+     }
+@@ -228,6 +231,16 @@ final class ChromecastFeatureIntegration {
+         #endif
+     }
+ 
++    static var usesPublicAdapter: Bool {
++        #if SAYALL_PUBLIC_CHROMECAST_VOICE
++        return true
++        #else
++        return false
++        #endif
++    }
++
++    static var isAvailable: Bool { isPackageIncluded || usesPublicAdapter }
++
+     /// 链路状态变化。宿主据此刷新设置页与日志。
+     var onStatusChange: ((ChromecastLinkStatus) -> Void)?
+     /// 遥控器自报的能力变化（连接可用时给出位域，链路不可用时给出空集合）。
+@@ -249,6 +262,19 @@ final class ChromecastFeatureIntegration {
+ 
+     #if SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)
+     private let feature: SayAllChromecastFeature
++    #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++    private let voiceBridge = ChromecastVoiceBridge()
++    private let hidControls = ChromecastHIDControls()
++    private var publicMappingEnabled = false
++    private var publicVoiceConnected = false
++
++    private func syncPublicControlMapping() {
++        if publicMappingEnabled && publicVoiceConnected {
++            hidControls.start()
++        } else {
++            hidControls.stop()
++        }
++    }
+     #endif
+ 
+     init() {
+@@ -277,18 +303,42 @@ final class ChromecastFeatureIntegration {
+                 cancellationReason: event.cancellationReason?.logToken
+             ))
+         }
++        #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++        voiceBridge.onStatus = { [weak self] status in
++            guard let self else { return }
++            self.publicVoiceConnected = status.isConnected
++            self.onStatusChange?(status)
++            self.syncPublicControlMapping()
++        }
++        voiceBridge.onCapabilities = { [weak self] in self?.onDeclaredCapabilitiesChange?($0) }
++        voiceBridge.onVoiceStart = { [weak self] in self?.onVoiceStart?() }
++        voiceBridge.onVoiceStop = { [weak self] in self?.onVoiceStop?($0) }
++        voiceBridge.onSamples = { [weak self] in self?.onSamples?($0, $1) }
++        voiceBridge.onLog = { [weak self] in self?.onLog?($0) }
++        hidControls.onControl = { [weak self] in self?.onControlEvent?($0) }
++        hidControls.onReadinessChange = { [weak self] in
++            guard let self else { return }
++            self.onHIDPresenceChange?(self.isHIDRemotePresent)
++        }
++        hidControls.onLog = { [weak self] in self?.onLog?($0) }
+         #endif
+     }
+ 
+     func start() {
+         #if SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)
+         feature.start()
++        #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++        voiceBridge.start()
+         #endif
+     }
+ 
+     func stop() {
+         #if SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)
+         feature.stop()
++        #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++        publicVoiceConnected = false
++        hidControls.stop()
++        voiceBridge.stop()
+         #endif
+     }
+ 
+@@ -296,6 +346,8 @@ final class ChromecastFeatureIntegration {
+     func reconnect() {
+         #if SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)
+         feature.reconnect()
++        #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++        voiceBridge.reconnect()
+         #endif
+     }
+ 
+@@ -305,19 +357,29 @@ final class ChromecastFeatureIntegration {
+         #endif
+     }
+ 
+-    /// 宿主「按键映射」总开关。开启后私有包独占该遥控器的 HID 设备，关闭时只观察。
+-    ///
+-    /// 缺包时 no-op。幂等，可安全重复调用。
++    /// 启用按键映射。公开后端仅中和支持配置的 Consumer Control 用法。
+     func setControlMappingEnabled(_ enabled: Bool) {
+         #if SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)
+         feature.setControlMappingEnabled(enabled)
++        #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++        publicMappingEnabled = enabled
++        syncPublicControlMapping()
++        #endif
++    }
++
++    var publicControlReadiness: RemoteFunctionReadiness? {
++        #if SAYALL_PUBLIC_CHROMECAST_VOICE
++        return hidControls.readiness
++        #else
++        return nil
+         #endif
+     }
+ 
+-    /// HID 侧是否已看到本遥控器。缺包时恒为 false。
+     var isHIDRemotePresent: Bool {
+         #if SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)
+         return feature.isHIDRemotePresent
++        #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++        return hidControls.readiness == .ready
+         #else
+         return false
+         #endif
+@@ -327,6 +389,8 @@ final class ChromecastFeatureIntegration {
+     func notifyHostVoiceSessionEnded() {
+         #if SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)
+         feature.notifyHostVoiceSessionEnded()
++        #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++        voiceBridge.hostEnded()
+         #endif
+     }
+ 
+diff --git a/Sources/RemoteMic/ChromecastHIDControls.swift b/Sources/RemoteMic/ChromecastHIDControls.swift
+new file mode 100644
+index 0000000..f89fc31
+--- /dev/null
++++ b/Sources/RemoteMic/ChromecastHIDControls.swift
+@@ -0,0 +1,157 @@
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++import Foundation
++import IOKit.hid
++
++/// The Consumer Control inputs on the G9N9N HID interface. Voice arrives on ATVV.
++enum ChromecastHIDControlMap {
++    static let usagePage: UInt32 = 0x0c
++    static let controls: [UInt32: ChromecastRemoteControl] = [
++        0x041: .select, 0x042: .up, 0x043: .down,
++        0x044: .left, 0x045: .right, 0x223: .home, 0x224: .back,
++        0x077: .youtube, 0x078: .netflix, 0x0e2: .mute,
++        0x0e9: .volumeUp, 0x0ea: .volumeDown,
++    ]
++
++    static let nativeSources = controls.keys.sorted().map { UInt64(usagePage) << 32 | UInt64($0) }
++    static let displayOrder: [RemoteButton] = [
++        .up, .down, .left, .right, .ok, .back,
++        .home, .mute, .youtube, .netflix, .volumeUp, .volumeDown,
++    ]
++}
++
++/// Observes just the G9N9N Consumer Control interface. The host suppresses only
++/// the supported native usages before accepting user-configured actions.
++final class ChromecastHIDControls {
++    var prepareNativeInput: (([UInt64]) -> Bool)?
++    var restoreNativeInput: (() -> Void)?
++    var onControl: ((ChromecastRemoteControlEvent) -> Void)?
++    var onReadinessChange: (() -> Void)?
++    var onLog: ((String) -> Void)?
++
++    private(set) var readiness: RemoteFunctionReadiness = .unknown {
++        didSet {
++            if readiness != oldValue { onReadinessChange?() }
++        }
++    }
++    private var manager: IOHIDManager?
++    private var devices: Set<IOHIDDevice> = []
++    private var pressed: Set<ChromecastRemoteControl> = []
++    private var retry: DispatchWorkItem?
++    private var sequence = 0
++
++    func start() {
++        guard manager == nil else { return }
++        let manager = IOHIDManagerCreate(kCFAllocatorDefault, 0)
++        let context = Unmanaged.passUnretained(self).toOpaque()
++        IOHIDManagerSetDeviceMatching(manager, [
++            kIOHIDVendorIDKey: 0x18d1,
++            kIOHIDProductIDKey: 0x9450,
++            kIOHIDPrimaryUsagePageKey: ChromecastHIDControlMap.usagePage,
++            kIOHIDPrimaryUsageKey: 1,
++            kIOHIDTransportKey: "Bluetooth Low Energy"
++        ] as CFDictionary)
++        IOHIDManagerRegisterDeviceMatchingCallback(manager, { context, result, _, device in
++            guard let context, result == kIOReturnSuccess else { return }
++            Unmanaged<ChromecastHIDControls>.fromOpaque(context).takeUnretainedValue()
++                .deviceChanged(device, connected: true)
++        }, context)
++        IOHIDManagerRegisterDeviceRemovalCallback(manager, { context, _, _, device in
++            guard let context else { return }
++            Unmanaged<ChromecastHIDControls>.fromOpaque(context).takeUnretainedValue()
++                .deviceChanged(device, connected: false)
++        }, context)
++        IOHIDManagerRegisterInputValueCallback(manager, { context, result, _, value in
++            guard let context, result == kIOReturnSuccess else { return }
++            Unmanaged<ChromecastHIDControls>.fromOpaque(context).takeUnretainedValue()
++                .handle(value)
++        }, context)
++        let result = IOHIDManagerOpen(manager, 0)
++        guard result == kIOReturnSuccess else {
++            readiness = .failed
++            onLog?("CHROMECAST HID phase=open result=failed io_return=\(result)")
++            return
++        }
++        self.manager = manager
++        readiness = .checking
++        IOHIDManagerScheduleWithRunLoop(manager, CFRunLoopGetMain(), CFRunLoopMode.commonModes.rawValue)
++    }
++
++    func stop() {
++        if let manager {
++            self.manager = nil
++            IOHIDManagerUnscheduleFromRunLoop(manager, CFRunLoopGetMain(), CFRunLoopMode.commonModes.rawValue)
++            IOHIDManagerClose(manager, 0)
++        }
++        devices.removeAll()
++        reset(reason: "hid_stopped")
++        readiness = .unknown
++    }
++
++    private func deviceChanged(_ device: IOHIDDevice, connected: Bool) {
++        guard manager != nil else { return }
++        if connected {
++            guard devices.insert(device).inserted else { return }
++        } else {
++            guard devices.remove(device) != nil else { return }
++        }
++        reset(reason: connected ? "hid_devices_changed" : "hid_disconnected")
++        guard devices.count == 1 else {
++            readiness = devices.isEmpty ? .unknown : .failed
++            onLog?("CHROMECAST HID phase=match result=unavailable matched_interfaces=\(devices.count)")
++            return
++        }
++        readiness = .checking
++        prepare(attempt: 1)
++    }
++
++    private func prepare(attempt: Int) {
++        retry = nil
++        guard manager != nil, devices.count == 1 else { return }
++        if prepareNativeInput?(ChromecastHIDControlMap.nativeSources) == true {
++            readiness = .ready
++            onLog?("CHROMECAST HID phase=prepare result=ready attempt=\(attempt)")
++        } else if attempt < 5 {
++            let work = DispatchWorkItem { [weak self] in self?.prepare(attempt: attempt + 1) }
++            retry = work
++            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(250), execute: work)
++        } else {
++            readiness = .failed
++            onLog?("CHROMECAST HID phase=prepare result=failed reason=native_mapping_unavailable")
++        }
++    }
++
++    private func handle(_ value: IOHIDValue) {
++        let element = IOHIDValueGetElement(value)
++        guard devices.contains(IOHIDElementGetDevice(element)),
++              IOHIDElementGetUsagePage(element) == ChromecastHIDControlMap.usagePage,
++              let control = ChromecastHIDControlMap.controls[IOHIDElementGetUsage(element)],
++              readiness == .ready else { return }
++        let state = IOHIDValueGetIntegerValue(value)
++        switch state {
++        case 1 where pressed.insert(control).inserted:
++            emit(control, .began)
++        case 0 where pressed.remove(control) != nil:
++            emit(control, .ended)
++        default:
++            break
++        }
++    }
++
++    private func reset(reason: String) {
++        retry?.cancel()
++        retry = nil
++        let cancelled = pressed
++        pressed.removeAll()
++        for control in cancelled { emit(control, .cancelled, reason: reason) }
++        restoreNativeInput?()
++    }
++
++    private func emit(_ control: ChromecastRemoteControl, _ phase: ChromecastRemoteControlPhase, reason: String? = nil) {
++        sequence += 1
++        onLog?("CHROMECAST CONTROL phase=\(phase.rawValue) control=\(control.rawValue) sequence=\(sequence)")
++        onControl?(ChromecastRemoteControlEvent(
++            control: control, phase: phase, sequence: sequence, cancellationReason: reason
++        ))
++    }
++}
++#endif
+diff --git a/Sources/RemoteMic/ChromecastVoiceBridge.swift b/Sources/RemoteMic/ChromecastVoiceBridge.swift
+new file mode 100644
+index 0000000..eae7c65
+--- /dev/null
++++ b/Sources/RemoteMic/ChromecastVoiceBridge.swift
+@@ -0,0 +1,361 @@
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++import CoreBluetooth
++import Foundation
++
++/// Voice-only G9N9N transport over CoreBluetooth and public ATVV.
++/// Adapted from the BLE transport in HD838A/remote-mic-app PR #876.
++final class ChromecastVoiceBridge: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
++    var onStatus: ((ChromecastLinkStatus) -> Void)?
++    var onCapabilities: ((ChromecastDeclaredCapabilities) -> Void)?
++    var onVoiceStart: (() -> Void)?
++    var onVoiceStop: ((ChromecastVoiceEndReason) -> Void)?
++    var onSamples: (([Int16], Int) -> Void)?
++    var onLog: ((String) -> Void)?
++    private let voice = ChromecastVoiceSession()
++    private var central: CBCentralManager?
++    private var peripheral: CBPeripheral?
++    private var transmit: CBCharacteristic?
++    private var audio: CBCharacteristic?
++    private var control: CBCharacteristic?
++    private(set) var enabled = false
++    private var stopping = false
++    private let makeCentral: (CBCentralManagerDelegate) -> CBCentralManager?
++    private var admitted = false
++    private var requestedCapabilities = false
++    private var rejected = Set<UUID>()
++    private var retry: Timer?
++    private var extend: Timer?
++    private var initializationTimeout: DispatchWorkItem?
++    private var reconnectWork: DispatchWorkItem?
++    private var idle: DispatchWorkItem?
++    private var tail: DispatchWorkItem?
++    private var status: ChromecastLinkStatus = .disabled {
++        didSet { if status != oldValue { onStatus?(status) } }
++    }
++    private static let service = CBUUID(string: ATVVProtocol.serviceUUID)
++    private static let dis = CBUUID(string: "180A")
++    private static let pnpID = CBUUID(string: "2A50")
++
++    private static func isCandidateName(_ rawName: String?) -> Bool {
++        guard let rawName else { return true }
++        let name = rawName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
++        return ["", "chromecast", "chromecast remote", "chromecast voice remote", "chromecast 遥控器", "g9n9n"].contains(name)
++    }
++
++    static func matchesPnPID(_ data: Data) -> Bool {
++        let bytes = Array(data)
++        // G9N9N firmware can advertise the same VID/PID with either PnP ID source.
++        return bytes.count == 7 && (bytes[0] == 1 || bytes[0] == 2) &&
++            bytes[1...4].elementsEqual([0xD1, 0x18, 0x50, 0x94])
++    }
++    private var now: TimeInterval { ProcessInfo.processInfo.systemUptime }
++
++    init(makeCentral: @escaping (CBCentralManagerDelegate) -> CBCentralManager? = {
++        CBCentralManager(delegate: $0, queue: .main)
++    }) {
++        self.makeCentral = makeCentral
++        super.init()
++        voice.onWrite = { [weak self] in self?.write($0) }
++        voice.onStart = { [weak self] in self?.onVoiceStart?() }
++        voice.onStop = { [weak self] in self?.onVoiceStop?($0) }
++        voice.onSamples = { [weak self] in self?.onSamples?($0, $1) }
++        voice.onLog = { [weak self] in self?.onLog?($0) }
++    }
++
++    deinit {
++        retry?.invalidate()
++        extend?.invalidate()
++        initializationTimeout?.cancel()
++        reconnectWork?.cancel()
++        idle?.cancel()
++        tail?.cancel()
++        peripheral?.delegate = nil
++        central?.delegate = nil
++        central?.stopScan()
++    }
++
++    func start() {
++        guard !enabled, !stopping else { return }
++        enabled = true
++        central = makeCentral(self)
++        retry = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [weak self] _ in
++            guard let self, self.enabled else { return }
++            if self.central?.state == .unauthorized,
++               CBCentralManager.authorization == .allowedAlways {
++                self.central?.delegate = nil
++                self.central = self.makeCentral(self)
++            } else { self.discover() }
++        }
++        extend = Timer.scheduledTimer(withTimeInterval: 50, repeats: true) { [weak self] _ in
++            self?.voice.extend()
++        }
++    }
++
++    func stop() {
++        guard !stopping else { return }
++        stopping = true
++        defer { stopping = false }
++        enabled = false
++        reconnectWork?.cancel()
++        reconnectWork = nil
++        retry?.invalidate()
++        extend?.invalidate()
++        retry = nil
++        extend = nil
++        central?.stopScan()
++        clearConnection()
++        central?.delegate = nil
++        central = nil
++        status = .disabled
++    }
++
++    func reconnect() {
++        guard !stopping else { return }
++        // A cancelled link can deliver didDisconnect after connect on the same
++        // peripheral. A fresh manager isolates that old callback from this retry.
++        if enabled { stop() }
++        rejected.removeAll()
++        start()
++    }
++
++    func hostEnded() { voice.cancel(reason: "host_stop", now: now) }
++
++    private func discover() {
++        guard enabled, let central, central.state == .poweredOn, peripheral == nil else { return }
++        status = .searching
++        let candidates = central.retrieveConnectedPeripherals(withServices: [Self.service])
++        if let candidate = candidates.first(where: {
++            !rejected.contains($0.identifier) && Self.isCandidateName($0.name)
++        }) {
++            connect(candidate)
++        } else if !central.isScanning {
++            central.scanForPeripherals(withServices: [Self.service])
++        }
++    }
++
++    private func connect(_ candidate: CBPeripheral) {
++        guard enabled, peripheral == nil, !rejected.contains(candidate.identifier) else { return }
++        central?.stopScan()
++        peripheral = candidate
++        candidate.delegate = self
++        status = .connecting
++        central?.connect(candidate)
++        let timeout = DispatchWorkItem { [weak self, weak candidate] in
++            guard let self, self.peripheral === candidate else { return }
++            self.onLog?("G9N9N LINK phase=failed reason=initialization_timeout")
++            if let candidate { self.reject(candidate, reason: "initialization_timeout") }
++        }
++        initializationTimeout = timeout
++        DispatchQueue.main.asyncAfter(deadline: .now() + 12, execute: timeout)
++    }
++
++    private func clearConnection() {
++        initializationTimeout?.cancel()
++        initializationTimeout = nil
++        tail?.cancel()
++        tail = nil
++        idle?.cancel()
++        idle = nil
++        // Deliver cancellation while the characteristic still belongs to this link.
++        voice.reset(now: now)
++        onCapabilities?([])
++        if let peripheral {
++            peripheral.delegate = nil
++            central?.cancelPeripheralConnection(peripheral)
++        }
++        peripheral = nil
++        transmit = nil
++        audio = nil
++        control = nil
++        admitted = false
++        requestedCapabilities = false
++    }
++
++    private func verifyIdentity(_ data: Data) {
++        guard let peripheral, !admitted else { return }
++        guard Self.matchesPnPID(data) else {
++            reject(peripheral, reason: "pnp_mismatch")
++            return
++        }
++        admitted = true
++        onLog?("G9N9N IDENTITY phase=accepted model=g9n9n")
++        for service in peripheral.services ?? [] where service.uuid == Self.service {
++            peripheral.discoverCharacteristics([
++                CBUUID(string: ATVVProtocol.transmitUUID),
++                CBUUID(string: ATVVProtocol.audioUUID),
++                CBUUID(string: ATVVProtocol.controlUUID),
++            ], for: service)
++        }
++    }
++
++    private func reject(_ peripheral: CBPeripheral, reason: String) {
++        guard self.peripheral === peripheral else { return }
++        rejected.insert(peripheral.identifier)
++        onLog?("G9N9N LINK phase=rejected reason=\(reason)")
++        clearConnection()
++        discover()
++    }
++
++    private func negotiate() {
++        guard admitted, transmit != nil, audio?.isNotifying == true,
++              control?.isNotifying == true, !requestedCapabilities else { return }
++        requestedCapabilities = true
++        write(ATVVProtocol.getCapabilitiesV10)
++    }
++
++    private func armIdleTimeout() {
++        idle?.cancel()
++        guard voice.active, voice.stopDeadline == nil else { return }
++        let generation = voice.generation
++        let timeout = DispatchWorkItem { [weak self] in
++            guard let self, self.voice.active, self.voice.generation == generation else { return }
++            self.voice.cancel(reason: "audio_timeout", now: self.now)
++        }
++        idle = timeout
++        DispatchQueue.main.asyncAfter(deadline: .now() + 5, execute: timeout)
++    }
++
++    private func write(_ data: Data) {
++        guard admitted, let peripheral, let transmit else { return }
++        let type: CBCharacteristicWriteType = transmit.properties.contains(.write) ? .withResponse : .withoutResponse
++        if type == .withoutResponse, !peripheral.canSendWriteWithoutResponse {
++            onLog?("G9N9N WRITE phase=failed reason=backpressure")
++            if data.first != 0x0D { voice.cancel(reason: "write_backpressure", now: now) }
++            return
++        }
++        peripheral.writeValue(data, for: transmit, type: type)
++    }
++
++    func centralManagerDidUpdateState(_ central: CBCentralManager) {
++        guard self.central === central, enabled else { return }
++        switch central.state {
++        case .poweredOn: discover()
++        case .unauthorized: clearConnection(); status = .unauthorized
++        default: clearConnection(); status = .disconnected
++        }
++    }
++
++    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
++                        advertisementData: [String: Any], rssi RSSI: NSNumber) {
++        let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String ?? peripheral.name
++        guard self.central === central, Self.isCandidateName(name) else { return }
++        connect(peripheral)
++    }
++
++    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
++        guard self.central === central, self.peripheral === peripheral else { return }
++        peripheral.discoverServices([Self.dis, Self.service])
++    }
++
++    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
++        disconnected(central, peripheral)
++    }
++
++    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
++        disconnected(central, peripheral)
++    }
++
++    private func disconnected(_ central: CBCentralManager, _ peripheral: CBPeripheral) {
++        guard self.central === central, self.peripheral === peripheral else { return }
++        clearConnection()
++        status = .disconnected
++        reconnectWork?.cancel()
++        let retry = DispatchWorkItem { [weak self, weak central] in
++            guard let self, let central, self.enabled, self.central === central else { return }
++            self.discover()
++        }
++        reconnectWork = retry
++        // Recover an observed disconnect promptly; keep the 15s poll for sleeping
++        // devices that have not reappeared, rather than making each voice press wait.
++        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: retry)
++    }
++
++    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
++        guard self.peripheral === peripheral else { return }
++        guard error == nil, peripheral.services?.contains(where: { $0.uuid == Self.service }) == true,
++              let dis = peripheral.services?.first(where: { $0.uuid == Self.dis }) else {
++            reject(peripheral, reason: "service_unavailable")
++            return
++        }
++        peripheral.discoverCharacteristics([Self.pnpID], for: dis)
++    }
++
++    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
++        guard self.peripheral === peripheral, error == nil else { return }
++        if service.uuid == Self.dis, service.characteristics?.contains(where: { $0.uuid == Self.pnpID }) != true {
++            reject(peripheral, reason: "pnp_unavailable")
++            return
++        }
++        for characteristic in service.characteristics ?? [] {
++            switch characteristic.uuid {
++            case Self.pnpID:
++                peripheral.readValue(for: characteristic)
++            case CBUUID(string: ATVVProtocol.transmitUUID): transmit = characteristic
++            case CBUUID(string: ATVVProtocol.audioUUID):
++                audio = characteristic
++                peripheral.setNotifyValue(true, for: characteristic)
++            case CBUUID(string: ATVVProtocol.controlUUID):
++                control = characteristic
++                peripheral.setNotifyValue(true, for: characteristic)
++            default: break
++            }
++        }
++        negotiate()
++    }
++
++    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
++        guard self.peripheral === peripheral else { return }
++        if error != nil {
++            onLog?("G9N9N LINK phase=failed reason=subscription_failed")
++            clearConnection()
++            status = .disconnected
++        } else { negotiate() }
++    }
++
++    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
++        guard self.peripheral === peripheral, error != nil else { return }
++        onLog?("G9N9N WRITE phase=failed reason=transport_error")
++        clearConnection()
++        status = .disconnected
++    }
++
++    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
++        guard self.peripheral === peripheral, error == nil, let data = characteristic.value else { return }
++        switch characteristic.uuid {
++        case Self.pnpID:
++            verifyIdentity(data)
++        case CBUUID(string: ATVVProtocol.controlUUID):
++            guard admitted else { return }
++            if data.first == 0x0B {
++                guard voice.capabilities == nil else { return }
++                guard requestedCapabilities, voice.acceptCapabilities(data) else {
++                    clearConnection()
++                    status = .unsupported(reason: "invalid_capabilities")
++                    return
++                }
++                initializationTimeout?.cancel()
++                initializationTimeout = nil
++                onCapabilities?([.voiceStream])
++                status = .connected(displayName: peripheral.name ?? "")
++            } else {
++                voice.control(data, now: now)
++                armIdleTimeout()
++                if let deadline = voice.stopDeadline {
++                    tail?.cancel()
++                    let item = DispatchWorkItem { [weak self] in
++                        guard let self else { return }
++                        self.voice.drain(now: self.now)
++                    }
++                    tail = item
++                    DispatchQueue.main.asyncAfter(deadline: .now() + max(0, deadline - now), execute: item)
++                }
++            }
++        case CBUUID(string: ATVVProtocol.audioUUID):
++            guard admitted else { return }
++            voice.audio(data, now: now)
++            armIdleTimeout()
++        default: break
++        }
++    }
++}
++#endif
+diff --git a/Sources/RemoteMic/ChromecastVoiceRemoteDrawing.swift b/Sources/RemoteMic/ChromecastVoiceRemoteDrawing.swift
+new file mode 100644
+index 0000000..997f25f
+--- /dev/null
++++ b/Sources/RemoteMic/ChromecastVoiceRemoteDrawing.swift
+@@ -0,0 +1,79 @@
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++import SwiftUI
++
++/// A schematic of the Chromecast with Google TV Voice Remote (G9N9N).
++struct ChromecastVoiceRemoteDrawing: View {
++    let voiceActive: Bool
++
++    private let drawingSize = CGSize(width: 112, height: 290)
++    private let buttonColor = Color(red: 0.94, green: 0.95, blue: 0.96)
++    private let ink = Color(red: 0.22, green: 0.25, blue: 0.30)
++    private let outline = Color(red: 0.77, green: 0.80, blue: 0.84)
++
++    var body: some View {
++        GeometryReader { proxy in
++            let scale = min(proxy.size.width / drawingSize.width, proxy.size.height / drawingSize.height)
++            remote
++                .frame(width: drawingSize.width, height: drawingSize.height)
++                .scaleEffect(scale)
++                .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
++        }
++        .accessibilityLabel(Text("chromecast.local.title"))
++    }
++
++    private var remote: some View {
++        ZStack {
++            RoundedRectangle(cornerRadius: 43)
++                .fill(Color(red: 0.99, green: 0.99, blue: 1))
++                .strokeBorder(outline, lineWidth: 1)
++                .frame(width: 100, height: 280)
++                .position(x: 54, y: 145)
++            VStack(spacing: 12) {
++                Image(systemName: "plus")
++                Image(systemName: "minus")
++            }
++            .font(.system(size: 6, weight: .semibold))
++            .foregroundStyle(ink)
++            .frame(width: 11, height: 56)
++            .background(outline, in: Capsule())
++            .position(x: 105, y: 117)
++            Circle()
++                .fill(buttonColor)
++                .strokeBorder(outline, lineWidth: 1)
++                .frame(width: 74, height: 74)
++                .position(x: 54, y: 55)
++            Circle()
++                .fill(.white)
++                .strokeBorder(outline, lineWidth: 1)
++                .frame(width: 36, height: 36)
++                .position(x: 54, y: 55)
++
++            button(x: 33, y: 114) { Image(systemName: "chevron.left") }
++            button(x: 75, y: 114, highlighted: true) { Image(systemName: "mic.fill") }
++            button(x: 33, y: 154) { Image(systemName: "house") }
++            button(x: 75, y: 154) { Image(systemName: "speaker.slash") }
++            button(x: 33, y: 194) { Text("YouTube").font(.system(size: 7, weight: .semibold)) }
++            button(x: 75, y: 194) { Text("Netflix").font(.system(size: 8, weight: .semibold)) }
++            button(x: 33, y: 234, size: 22) { Image(systemName: "power") }
++            button(x: 75, y: 234, size: 22) { Image(systemName: "rectangle.portrait.and.arrow.right") }
++        }
++    }
++
++    private func button<Glyph: View>(
++        x: CGFloat,
++        y: CGFloat,
++        size: CGFloat = 32,
++        highlighted: Bool = false,
++        @ViewBuilder glyph: () -> Glyph
++    ) -> some View {
++        let accent = voiceActive ? Color.orange : Color.accentColor
++        return glyph()
++            .font(.system(size: size * 0.38, weight: .medium))
++            .foregroundStyle(highlighted ? accent : ink)
++            .frame(width: size, height: size)
++            .background(highlighted ? accent.opacity(0.16) : buttonColor, in: Circle())
++            .overlay(Circle().strokeBorder(highlighted ? accent : outline, lineWidth: highlighted ? 1.5 : 0.75))
++            .position(x: x, y: y)
++    }
++}
++#endif
+diff --git a/Sources/RemoteMic/ChromecastVoiceSession.swift b/Sources/RemoteMic/ChromecastVoiceSession.swift
+new file mode 100644
+index 0000000..4d820f0
+--- /dev/null
++++ b/Sources/RemoteMic/ChromecastVoiceSession.swift
+@@ -0,0 +1,166 @@
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++import Foundation
++
++/// Hold-to-talk ATVV session feeding SayAll's existing voice pipeline.
++/// Adapted from the voice session in HD838A/remote-mic-app PR #876.
++final class ChromecastVoiceSession {
++    var onWrite: ((Data) -> Void)?
++    var onStart: (() -> Void)?
++    var onStop: ((ChromecastVoiceEndReason) -> Void)?
++    var onSamples: (([Int16], Int) -> Void)?
++    var onLog: ((String) -> Void)?
++    private(set) var capabilities: ATVVCapabilities?
++    private(set) var active = false
++    private(set) var generation = 0
++    private(set) var stopDeadline: TimeInterval?
++    private var sessionID: UInt8 = 0
++    private var cancelled = false
++    private var hostOpenedStream = false
++    private var accumulator = FrameAccumulator()
++    private let decoder = IMAADPCMDecoder()
++    private var pendingSync: (Int, Int)?
++    private var frames = 0
++    private var samples = 0
++    private var startedAt: TimeInterval = 0
++    private var firstPCM = false
++
++    @discardableResult
++    func acceptCapabilities(_ data: Data) -> Bool {
++        guard let value = ATVVCapabilities.parse(data), value.codecs & 2 != 0,
++              value.frameSize > 0, value.frameSize <= 4096,
++              ATVVProtocol.supportsAudio(sampleRate: value.sampleRate) else { return false }
++        capabilities = value
++        onLog?("G9N9N CAPS phase=ready codec=2 frame_bytes=\(value.frameSize)")
++        return true
++    }
++
++    func control(_ data: Data, now: TimeInterval) {
++        guard let caps = capabilities, let opcode = data.first else { return }
++        let bytes = Array(data)
++        switch opcode {
++        case 0x08:
++            if stopDeadline != nil { finish(reason: .holdRelease, now: now) }
++            guard !active else { return }
++            cancelled = false
++            // HTT remotes open their own stream. MIC_OPEN can replace it mid-press.
++            guard caps.interaction != 0x03 else { return }
++            begin(now: now)
++            hostOpenedStream = true
++            onWrite?(ATVVProtocol.microphoneOpen(version: caps.version, codec: caps.selectedCodec))
++        case 0x04:
++            guard bytes.count >= 4, bytes[2] == caps.selectedCodec else {
++                cancel(reason: "invalid_stream_start", now: now)
++                return
++            }
++            sessionID = bytes[3]
++            guard !cancelled else { return }
++            // An explicit new START separates sessions, even inside the tail window.
++            if stopDeadline != nil { finish(reason: .holdRelease, now: now) }
++            if !active { begin(now: now) }
++            hostOpenedStream = bytes[1] == 0
++        case 0x00:
++            cancelled = false
++            guard active, stopDeadline == nil else { return }
++            // Keep accepting ordered tail notifications before the host drains audio.
++            stopDeadline = now + 0.12
++        case 0x0A:
++            guard active, bytes.count >= 7, bytes[6] <= 88 else { return }
++            flushPartial(now: now)
++            pendingSync = (Int(Int16(bitPattern: UInt16(bytes[4]) << 8 | UInt16(bytes[5]))), Int(bytes[6]))
++        default: break
++        }
++    }
++
++    func audio(_ data: Data, now: TimeInterval) {
++        guard capabilities != nil, active, !cancelled, !data.isEmpty else { return }
++        // Do not infer a new session from late audio after STOP or host cancellation.
++        if let deadline = stopDeadline, now >= deadline {
++            drain(now: now)
++            return
++        }
++        guard data.count <= 4096, let caps = capabilities else { return }
++        for frame in accumulator.append(data, frameSize: caps.frameSize) { decode(frame, now: now) }
++    }
++
++    func drain(now: TimeInterval) {
++        guard let deadline = stopDeadline, now >= deadline else { return }
++        finish(reason: .holdRelease, now: now)
++    }
++
++    func extend() {
++        guard active, hostOpenedStream, stopDeadline == nil, let caps = capabilities,
++              let data = ATVVProtocol.microphoneExtend(version: caps.version, sessionID: sessionID)
++        else { return }
++        onWrite?(data)
++        onLog?("G9N9N VOICE phase=sustained generation=\(generation)")
++    }
++
++    func cancel(reason: String, now: TimeInterval) {
++        // Host usage cleanup also runs after a normal transport stop. It must
++        // not poison the next direct STREAM_START as a cancelled late packet.
++        guard active else { return }
++        cancelled = true
++        if hostOpenedStream, let caps = capabilities {
++            onWrite?(ATVVProtocol.microphoneClose(version: caps.version, sessionID: sessionID))
++        }
++        finish(reason: .cancelled(reason), now: now)
++    }
++
++    func reset(now: TimeInterval) {
++        cancel(reason: "disconnect", now: now)
++        capabilities = nil
++        sessionID = 0
++        cancelled = false
++    }
++
++    private func begin(now: TimeInterval) {
++        active = true
++        generation += 1
++        frames = 0
++        samples = 0
++        firstPCM = false
++        startedAt = now
++        stopDeadline = nil
++        accumulator = FrameAccumulator()
++        pendingSync = nil
++        hostOpenedStream = false
++        decoder.reset()
++        onLog?("G9N9N VOICE phase=started generation=\(generation)")
++        onStart?()
++    }
++
++    private func decode(_ frame: Data, now: TimeInterval) {
++        if let sync = pendingSync {
++            decoder.reset(predictor: sync.0, stepIndex: sync.1)
++            pendingSync = nil
++        }
++        let pcm = PCMPostprocessor.process(decoder.decode(frame), gainDB: 0)
++        frames += 1
++        samples += pcm.count
++        if !firstPCM {
++            firstPCM = true
++            onLog?("G9N9N AUDIO phase=first_pcm generation=\(generation) trigger_down_to_first_pcm_ms=\(Int(max(0, now - startedAt) * 1000))")
++        }
++        onSamples?(pcm, generation)
++    }
++
++    private func flushPartial(now: TimeInterval) {
++        let tail = accumulator.pending
++        // Data may leave a nonzero start index after consuming a frame. Keep the
++        // tail's storage alive and replace the buffer before applying the next SYNC.
++        accumulator = FrameAccumulator()
++        if !tail.isEmpty { decode(tail, now: now) }
++    }
++
++    private func finish(reason: ChromecastVoiceEndReason, now: TimeInterval) {
++        guard active else { return }
++        if reason.isNormal { flushPartial(now: now) } else { accumulator = FrameAccumulator() }
++        active = false
++        hostOpenedStream = false
++        pendingSync = nil
++        stopDeadline = nil
++        onLog?("G9N9N VOICE phase=completed generation=\(generation) completion=\(reason.isNormal ? "normal" : "forced") reason=\(reason.logToken) frames=\(frames) samples=\(samples) elapsed_ms=\(Int(max(0, now - startedAt) * 1000))")
++        onStop?(reason)
++    }
++}
++#endif
+diff --git a/Sources/RemoteMic/FirstUseDiagnostics.swift b/Sources/RemoteMic/FirstUseDiagnostics.swift
+index 1daf56f..2ce361b 100644
+--- a/Sources/RemoteMic/FirstUseDiagnostics.swift
++++ b/Sources/RemoteMic/FirstUseDiagnostics.swift
+@@ -409,7 +409,10 @@ struct FirstUseDiagnosticContext: Equatable {
+             if !capabilities.accessibilityGranted { return .accessibilityPermissionDenied }
+         case .remote:
+             if !capabilities.remoteConnected { return .remoteNotFound }
+-            if !capabilities.remoteButtonObserved { return .remoteButtonNotReady }
++            if !capabilities.remoteButtonObserved,
++               controlSource != .chromecastRemote || !ChromecastFeatureIntegration.usesPublicAdapter {
++                return .remoteButtonNotReady
++            }
+         case .audio:
+             if !hasSelectedAudioUID { return .audioNoOutputDevice }
+             if !capabilities.audioOutputSelected { return .audioSelectedDeviceMissing }
+diff --git a/Sources/RemoteMic/KeyboardInjector.swift b/Sources/RemoteMic/KeyboardInjector.swift
+index df407bc..05a799d 100644
+--- a/Sources/RemoteMic/KeyboardInjector.swift
++++ b/Sources/RemoteMic/KeyboardInjector.swift
+@@ -826,6 +826,10 @@ enum KeyboardInjector {
+             break
+         case .toggleLongRecording, .openCommonPhrases:
+             break
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++        case .switchChineseVoiceInputMethod:
++            break
++#endif
+         case .openRemoteMic, .openCodex, .openWorkBuddy, .openClaude, .openCmux, .openWeChat, .openCursor, .openXcode,
+              .openSlack, .openWeCom, .openNeteaseMusic, .openChrome, .openSafari, .openZed, .openDimAgent:
+             break
+diff --git a/Sources/RemoteMic/OnboardingFlow.swift b/Sources/RemoteMic/OnboardingFlow.swift
+index f66083d..e585a0c 100644
+--- a/Sources/RemoteMic/OnboardingFlow.swift
++++ b/Sources/RemoteMic/OnboardingFlow.swift
+@@ -171,6 +171,17 @@ enum OnboardingVoiceTool: String, CaseIterable, Codable, Identifiable {
+     var requiresFunctionKeySetup: Bool {
+         preferredInputSourceID != nil
+     }
++
++    static func chromecastTypingTool(activeSourceID: String?, fallback: Self) -> Self {
++        [Self.doubao, .weixin].first { $0.preferredInputSourceID == activeSourceID } ?? fallback
++    }
++
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++    static func nextChineseVoiceInputMethod(activeSourceID: String?, lastUsed: Self?) -> Self {
++        chromecastTypingTool(activeSourceID: activeSourceID, fallback: lastUsed ?? .unselected) == .doubao
++            ? .weixin : .doubao
++    }
++#endif
+ }
+ 
+ /// 提示词放在本地化资源中；源码只负责按语言读取，避免长文案和产品配置混在一起。
+@@ -373,7 +384,9 @@ enum OnboardingControlSource: String, CaseIterable, Codable, Identifiable {
+             return []
+         case .xiaomiRemote, .siriRemote:
+             return [.hold]
+-        case .chromecastRemote, .appleCompanion, .webRemote:
++        case .chromecastRemote:
++            return ChromecastFeatureIntegration.usesPublicAdapter ? [.hold] : [.hold, .toggle]
++        case .appleCompanion, .webRemote:
+             return [.hold, .toggle]
+         }
+     }
+@@ -650,7 +663,7 @@ enum OnboardingControlSourceVisibilityPolicy {
+     static func visibleSources(
+         _ sources: [OnboardingControlSource]
+     ) -> [OnboardingControlSource] {
+-        sources.filter { $0 != .chromecastRemote }
++        sources.filter { $0 != .chromecastRemote || ChromecastFeatureIntegration.usesPublicAdapter }
+     }
+ }
+ 
+@@ -670,8 +683,11 @@ struct OnboardingVoicePairingPlan: Equatable {
+     ) -> Self? {
+         guard tool != .unselected, controlSource != .unselected else { return nil }
+         let profile = VoiceToolAdapterProfile.profile(for: tool)
++        let usesChromecastHold = controlSource == .chromecastRemote &&
++            ChromecastFeatureIntegration.usesPublicAdapter &&
++            (tool == .doubao || tool == .weixin)
+ 
+-        if let userBinding {
++        if let userBinding, !usesChromecastHold || userBinding.gestureMode == .hold {
+             var effectiveBinding = userBinding
+             if forceFunctionKey {
+                 effectiveBinding = VoiceToolUserBinding(
+@@ -698,7 +714,7 @@ struct OnboardingVoicePairingPlan: Equatable {
+             )
+         }
+ 
+-        let candidates = gestureCandidates(
++        let candidates: [VoiceGestureMode] = usesChromecastHold ? [.hold] : gestureCandidates(
+             profile: profile,
+             controlSource: controlSource,
+             preferredGesture: preferredGesture
+@@ -766,7 +782,7 @@ struct OnboardingVoicePairingPlan: Equatable {
+             binding.shortcut == .function &&
+             !controlSource.supportedGestureModes.contains(.toggle)
+         let chromecastMode: ChromecastVoiceMode? = controlSource == .chromecastRemote
+-            ? (binding.gestureMode == .toggle ? .toggle : .hold)
++            ? (fnTap || binding.gestureMode == .hold ? .hold : .toggle)
+             : nil
+         return Self(
+             binding: binding,
+@@ -1035,7 +1051,8 @@ enum OnboardingFlowPolicy {
+                     capabilities.inputMonitoringGranted) &&
+                 capabilities.accessibilityGranted
+         case .remote:
+-            return capabilities.remoteConnected && capabilities.remoteButtonObserved
++            let voiceOnly = controlSource == .chromecastRemote && ChromecastFeatureIntegration.usesPublicAdapter
++            return capabilities.remoteConnected && (voiceOnly || capabilities.remoteButtonObserved)
+         case .audio:
+             return OnboardingAudioReadinessPolicy.isSatisfied(
+                 controlMethod: controlMethod,
+diff --git a/Sources/RemoteMic/OnboardingInputSourceSwitcher.swift b/Sources/RemoteMic/OnboardingInputSourceSwitcher.swift
+index f17c842..205114f 100644
+--- a/Sources/RemoteMic/OnboardingInputSourceSwitcher.swift
++++ b/Sources/RemoteMic/OnboardingInputSourceSwitcher.swift
+@@ -26,6 +26,10 @@ enum OnboardingSystemFunctionKeyUsage: Equatable {
+ }
+ 
+ enum OnboardingInputSourceSwitcher {
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++    static let selectedSourceChanged = Notification.Name(kTISNotifySelectedKeyboardInputSourceChanged as String)
++#endif
++
+     static func applicationURL(for voiceTool: OnboardingVoiceTool) -> URL? {
+         if let bundleIdentifier = voiceTool.applicationBundleIdentifier {
+             return NSWorkspace.shared.urlForApplication(
+diff --git a/Sources/RemoteMic/OnboardingView.swift b/Sources/RemoteMic/OnboardingView.swift
+index 84d991c..8858553 100644
+--- a/Sources/RemoteMic/OnboardingView.swift
++++ b/Sources/RemoteMic/OnboardingView.swift
+@@ -813,6 +813,9 @@ struct OnboardingView: View {
+                 ForEach(availablePhysicalControlCards) { card in
+                     physicalRemoteCard(card, compact: compact)
+                 }
++                if visibleControlSources.contains(.chromecastRemote) {
++                    controlSourceCard(.chromecastRemote, emphasized: false)
++                }
+             }
+ 
+             if !availableAlternativeControlSources.isEmpty {
+@@ -1026,7 +1029,11 @@ struct OnboardingView: View {
+                         .lineLimit(1)
+                         .truncationMode(.tail)
+                         .layoutPriority(1)
+-                    Text(localization.text(source.detailKey))
++                    Text(localization.text(
++                        source == .chromecastRemote && ChromecastFeatureIntegration.usesPublicAdapter
++                            ? "onboarding.chromecast.voice_only"
++                            : source.detailKey
++                    ))
+                         .font(.system(size: 12))
+                         .foregroundStyle(.secondary)
+                         .multilineTextAlignment(.leading)
+@@ -1768,7 +1775,11 @@ struct OnboardingView: View {
+     private var remoteContent: some View {
+         switch settings.onboardingControlMethod {
+         case .physicalRemote:
+-            physicalRemoteContent
++            if usesPublicChromecastVoice {
++                publicChromecastConnectionContent
++            } else {
++                physicalRemoteContent
++            }
+         case .iPhoneApp:
+             iPhoneRemoteContent
+         case .webRemote:
+@@ -1778,6 +1789,30 @@ struct OnboardingView: View {
+         }
+     }
+ 
++    private var usesPublicChromecastVoice: Bool {
++        settings.onboardingControlSource == .chromecastRemote &&
++            ChromecastFeatureIntegration.usesPublicAdapter
++    }
++
++    private var publicChromecastConnectionContent: some View {
++        VStack(alignment: .leading, spacing: 18) {
++            onboardingTitle("onboarding.remote.chromecast_pairing.title")
++            Text(verbatim: localization.text("onboarding.chromecast.connect"))
++                .foregroundStyle(.secondary)
++            statusCard(
++                icon: selectedControlConnected ? "checkmark.circle.fill" : "dot.radiowaves.left.and.right",
++                title: localization.text(model.chromecastStatus.localizationKey),
++                detail: localization.text("onboarding.chromecast.voice_only"),
++                isComplete: selectedControlConnected,
++                compact: true
++            )
++            Button(localization.text("onboarding.remote.open_bluetooth"), action: openBluetoothSettings)
++            Button(localization.text("onboarding.remote.reconnect")) {
++                prepareSelectedControlConnection()
++            }
++        }
++    }
++
+     private var physicalRemoteContent: some View {
+         VStack(alignment: .leading, spacing: 18) {
+             onboardingTitle("onboarding.remote.title")
+@@ -2970,6 +3005,9 @@ struct OnboardingView: View {
+             ChromecastConnectionPhoto()
+                 .scaleEffect(1.8)
+                 .frame(width: 190, height: 360)
++            #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++            ChromecastVoiceRemoteDrawing(voiceActive: model.isStreaming)
++                .frame(width: 164, height: 360)
+             #else
+             remotePhotoPlaceholder
+             #endif
+@@ -4529,7 +4567,7 @@ struct OnboardingView: View {
+                 return
+             }
+         }
+-        if settings.onboardingControlSource == .chromecastRemote {
++        if settings.onboardingControlSource == .chromecastRemote, !usesPublicChromecastVoice {
+             selectControlSource(.unselected)
+             settings.setOnboardingStep(.remoteAvailability)
+             return
+@@ -5387,6 +5425,10 @@ struct OnboardingView: View {
+         }
+         if settings.onboardingStep == .voiceTest {
+             settings.verifyOnboardingVoiceBinding()
++            if usesPublicChromecastVoice {
++                settings.setOnboardingStep(.complete)
++                return
++            }
+         }
+         if settings.onboardingStep != .voiceTest {
+             settings.recordFirstUseEvent(.passed, step: settings.onboardingStep)
+@@ -5410,6 +5452,7 @@ struct OnboardingView: View {
+     }
+ 
+     private var previousStep: OnboardingStep? {
++        if usesPublicChromecastVoice, settings.onboardingStep == .complete { return .voiceTest }
+         return settings.onboardingStep.previous
+     }
+ 
+diff --git a/Sources/RemoteMic/RemoteButtons.swift b/Sources/RemoteMic/RemoteButtons.swift
+index 548d9b7..e1790ff 100644
+--- a/Sources/RemoteMic/RemoteButtons.swift
++++ b/Sources/RemoteMic/RemoteButtons.swift
+@@ -192,9 +192,9 @@ extension RemoteButton {
+         case .tv: return "tv"
+         case .playPause: return "playpause.fill"
+         case .mute: return "speaker.slash"
+-        // 这三颗键只属于 Chromecast 遥控器，由它自己的画布渲染；小米画布的卡片集合是
+-        // `RemoteButton.xiaomiCases`，不会出现它们，这里只是满足枚举穷尽性。
+-        case .youtube, .netflix, .input: return "questionmark"
++        case .youtube: return "play.rectangle"
++        case .netflix: return "film"
++        case .input: return "questionmark"
+         }
+     }
+ 
+@@ -980,6 +980,9 @@ enum ButtonAction: String, CaseIterable, Codable, Identifiable {
+     case volumeUp
+     case volumeDown
+     case volumeMute
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++    case switchChineseVoiceInputMethod
++#endif
+     case playPause
+     case previousCommandLeft
+     case nextCommandRight
+@@ -1058,6 +1061,9 @@ enum ButtonAction: String, CaseIterable, Codable, Identifiable {
+         case .volumeUp: return localization.text("action.system_volume_up")
+         case .volumeDown: return localization.text("action.system_volume_down")
+         case .volumeMute: return localization.text("action.system_mute")
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++        case .switchChineseVoiceInputMethod: return localization.text("action.switch_chinese_voice_input_method")
++#endif
+         case .playPause: return localization.text("action.play_pause")
+         case .previousCommandLeft: return localization.text("action.previous_command_left")
+         case .nextCommandRight: return localization.text("action.next_command_right")
+@@ -1246,6 +1252,10 @@ enum ButtonAction: String, CaseIterable, Codable, Identifiable {
+             return .systemAndMedia
+         case .customShortcut:
+             return .customShortcuts
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++        case .switchChineseVoiceInputMethod:
++            return .systemAndMedia
++#endif
+         case .focusInput:
+             return .custom
+         case .combinationAction:
+@@ -1317,7 +1327,10 @@ enum ButtonAction: String, CaseIterable, Codable, Identifiable {
+     }
+ 
+     var isAppInternal: Bool {
+-        self == .toggleLongRecording || self == .openCommonPhrases
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++        if self == .switchChineseVoiceInputMethod { return true }
++#endif
++        return self == .toggleLongRecording || self == .openCommonPhrases
+     }
+ 
+     func isEnabled(experimentalContinuousRecordingEnabled: Bool) -> Bool {
+diff --git a/Sources/RemoteMic/RemoteMappingCanvas.swift b/Sources/RemoteMic/RemoteMappingCanvas.swift
+index 55dd44a..7b36ca3 100644
+--- a/Sources/RemoteMic/RemoteMappingCanvas.swift
++++ b/Sources/RemoteMic/RemoteMappingCanvas.swift
+@@ -138,7 +138,44 @@ struct RemoteMappingCanvas: View {
+     /// 方案作用域只覆盖 10 个普通按键；不在范围内的按键置灰且不可点。
+     var reservedButtons: Set<RemoteButton> = []
+ 
++    @ViewBuilder
+     var body: some View {
++        #if SAYALL_PUBLIC_CHROMECAST_VOICE
++        if remoteModel?.isChromecastRemote == true {
++            chromecastCanvas
++        } else {
++            xiaomiCanvas
++        }
++        #else
++        xiaomiCanvas
++        #endif
++    }
++
++    #if SAYALL_PUBLIC_CHROMECAST_VOICE
++    private var chromecastCanvas: some View {
++        HStack(alignment: .center, spacing: 24) {
++            ChromecastVoiceRemoteDrawing(voiceActive: voiceActive)
++                .frame(width: 125, height: 306)
++                .accessibilityHidden(true)
++            VStack(alignment: .leading, spacing: 12) {
++                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
++                    ForEach(ChromecastHIDControlMap.displayOrder, id: \.self) { button in
++                        mappingCard(button)
++                    }
++                }
++                Label(localization.text("chromecast.local.hold_instruction"), systemImage: "mic.fill")
++                    .font(.callout)
++                    .foregroundStyle(.secondary)
++                    .fixedSize(horizontal: false, vertical: true)
++            }
++            .frame(maxWidth: 590)
++        }
++        .padding(.vertical, 8)
++        .frame(maxWidth: .infinity)
++    }
++    #endif
++
++    private var xiaomiCanvas: some View {
+         GeometryReader { geometry in
+             let metrics = Metrics(width: geometry.size.width)
+             ZStack {
+diff --git a/Sources/RemoteMic/SettingsView.swift b/Sources/RemoteMic/SettingsView.swift
+index f80dc25..200b877 100644
+--- a/Sources/RemoteMic/SettingsView.swift
++++ b/Sources/RemoteMic/SettingsView.swift
+@@ -1233,6 +1233,8 @@ struct SettingsView: View {
+             } else if settings.selectedRemoteProfile?.model.isChromecastRemote == true {
+                 #if SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)
+                 chromecastMappingPage
++                #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++                mappingPage
+                 #else
+                 mappingPage
+                 #endif
+@@ -1824,6 +1826,9 @@ struct SettingsView: View {
+         } else if settings.selectedRemoteProfile?.model.isChromecastRemote == true {
+             #if SAYALL_CHROMECAST_ENABLED && canImport(SayAllChromecast)
+             ChromecastConnectionPhoto()
++            #elseif SAYALL_PUBLIC_CHROMECAST_VOICE
++            ChromecastVoiceRemoteDrawing(voiceActive: model.isStreaming)
++                .frame(width: 82, height: 166)
+             #else
+             UnrecognizedRemotePhoto()
+                 .frame(width: 82, height: 166)
+@@ -3071,7 +3076,8 @@ struct SettingsView: View {
+     private var mappingPageHeader: some View {
+         VStack(alignment: .leading, spacing: 6) {
+             PageHeader(title: localization.text("button_mapping.page.title"))
+-            Text(localization.text("button_mapping.page.subtitle"))
++            Text(localization.text(usesPublicChromecastCanvas
++                ? "chromecast.local.mapping_hint" : "button_mapping.page.subtitle"))
+                 .font(.system(size: 13))
+                 .foregroundStyle(.secondary)
+                 .fixedSize(horizontal: false, vertical: true)
+@@ -3079,12 +3085,21 @@ struct SettingsView: View {
+         }
+     }
+ 
++    private var usesPublicChromecastCanvas: Bool {
++        ChromecastFeatureIntegration.usesPublicAdapter &&
++            settings.selectedRemoteProfile?.model.isChromecastRemote == true
++    }
++
+     private var mappingPage: some View {
+         hardwareMappingPage {
+             RemoteMappingCanvas(
+                 selectedButton: $selectedRemoteButton,
+-                activeButtons: model.activeRemoteButtons,
+-                voiceActive: model.isStreaming,
++                activeButtons: usesPublicChromecastCanvas
++                    ? Set(model.activeChromecastControlIDs.compactMap {
++                        ChromecastRemoteControl(rawValue: $0)?.remoteButton
++                    })
++                    : model.activeRemoteButtons,
++                voiceActive: usesPublicChromecastCanvas ? model.isChromecastVoiceActive : model.isStreaming,
+                 remoteModel: settings.selectedRemoteProfile?.model,
+                 actionSummary: { button, trigger in mappingActionSummary(for: button, trigger: trigger) },
+                 holdSummary: { button in mappingHoldSummary(for: button) },
+diff --git a/TODO.md b/TODO.md
+index 4ba3aae..bf4aca7 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -302,6 +302,7 @@
+     - 新配置采用 staged → verified 事务：只有真实会话开始、PCM、正常停止、第三方配置确认与文字上屏全部通过后才持久化；返回、退出或异常中断恢复原配置。
+     - 控制来源已合并成单页并按 Package 门禁：公开构建显示小米 RC003 / RC001 两张独立卡片；完整包增加苹果遥控器第 6/7 代、Chromecast 及 Apple companion/Web 备用方式，实体设备优先展示。小米选择型号后，连接、普通按键、语音、完成门禁和右栏真机图都跟随该型号。
+     - Vokie 通过公开 Bundle ID / URL Scheme 后台启动，`sayall://launch` 回流只做激活与日志记录；回流状态不能替代真实语音门禁，也不读取第三方私有配置。
++    - 本地 G9N9N 公开候选从已确认的 PnP 身份接入 ATVV，并通过独立 HID 接口接入方向、确定、返回、音量、主页、静音、YouTube 和 Netflix。须验证这些普通键的实际自定义动作，以及映射开启时豆包、微信的长按文字上屏。其他平台未验收。
+     - 自动化已覆盖默认矩阵、来源转换、Fn 点按、Chromecast 原生 toggle、事务回滚、Package 编译门禁与 Deep Link 解析；仍需完成公开/完整包生产截图、私有 Package 构建、真实第三方工具、iPhone/Watch/Web 模式上报、各硬件真实语音文字与 macOS 14/15/当前系统验收后才能勾选。
+     - 详细方案与证据保存在私有资料库 `projects/remote-mic-app/research/onboarding-voice-shortcuts-and-input-method-visibility/v1/ONBOARDING-OPTIMIZATION-PLAN.md`；公开仓只保留行为、兼容边界和验证状态。
+     - Secure Input 仅作为实体遥控器普通按键无响应时的候选诊断；需在真实密码输入/安全键盘场景验证“重新检测”恢复路径，并确认普通按键页不执行用户已有映射。
+diff --git a/Testing/ChromecastHardwareInterface.md b/Testing/ChromecastHardwareInterface.md
+index 10dfcba..60b7770 100644
+--- a/Testing/ChromecastHardwareInterface.md
++++ b/Testing/ChromecastHardwareInterface.md
+@@ -735,3 +735,16 @@ resolve、测试与 Release 构建；本机已持有私有包路径，不能替
+ 失败判定：三键置灰、动作被跳过、双执行、松开后仍执行、重启丢配置、影响上/下或语音生命周期。
+ 日志：按本手册的日志收集流程保留本轮加密日志；核对按下/释放、映射分发和最终用户动作。接收事件或 `dispatched` 不能代替用户界面结果。
+ 验证边界：策略回归覆盖新旧设置与画布保留表；真实 Chromecast 固件、媒体双执行和正常语音基线仍需实机验证。源码候选不得写成实机通过。
++
++## 本机公开候选验证
++
++本机候选用 `SAYALL_PUBLIC_CHROMECAST_VOICE=1` 启用，适用于 PnP VID/PID 为 `18D1:9450` 的 macOS G9N9N。语音使用 CoreBluetooth 和 ATVV，支持按住说话。设置页经独立的 HID Consumer Control 接口开放四个方向键、确定、返回、侧边音量加减、主页、静音、YouTube 和 Netflix 的映射。电池、点按持续收音及其余按键映射未接入。Windows 实机未验证。
++
++1. 使用仅配对一只 Chromecast 的 Mac。从欢迎页选择 Chromecast，检查权限与真实语音链路就绪。测试蓝牙关闭、重新打开和向导重启。
++2. 选择一个受支持的虚拟麦克风，豆包选择同一麦克风。用长按说话和 Fn 快捷键完成向导实际语音测试。普通按键检查不适用。
++3. 首次设置完成后，为微信输入法配置同一虚拟麦克风和 Fn 长按。通过 macOS 输入法菜单在豆包与微信之间切换，每次按住说一整句并检查文字由当前输入法生成。
++4. 连续说两句，核对首字、尾字及松键停止。断连时检查修饰键释放，重新连接后再次测试。
++5. 按 `HardwareVoiceAudioContract.md` 记录首个 PCM、输出排空及可见文字。默认公开构建不显示候选入口。协议回放及 SwiftPM 测试与实机结果分别记录。
++6. 开启自定义按键，逐一检查十二颗键的 HID 按下/释放与最终动作。将侧边音量加减和静音临时改为另一动作，检查动作只执行一次且系统音量和静音状态不再随之变化，恢复原配置。主页默认显示桌面，YouTube 和 Netflix 默认没有绑定动作，为两颗应用键各设一个测试动作并验证。关闭映射后检查系统行为，返回设置并重新开启。
++7. 映射保持开启，在空白文稿中分别用豆包和微信长按说话。核对实际文字、音频尾部排空，确认语音键不产生普通按键映射。
++8. 给 Netflix 单击绑定「切换豆包与微信输入法」。从豆包和微信起步各验证一次，中途手动选中 ABC，松开语音键后按 Netflix。再次按键应选中另一款中文输入法，且不会选回 ABC。
+diff --git a/Tests/RemoteMicTests/ChromecastPublicVoiceTests.swift b/Tests/RemoteMicTests/ChromecastPublicVoiceTests.swift
+new file mode 100644
+index 0000000..929908b
+--- /dev/null
++++ b/Tests/RemoteMicTests/ChromecastPublicVoiceTests.swift
+@@ -0,0 +1,140 @@
++#if SAYALL_PUBLIC_CHROMECAST_VOICE
++import Foundation
++import Testing
++
++@testable import RemoteMic
++
++struct ChromecastPublicVoiceTests {
++    @Test func fixedInputSwitchIgnoresOtherInputSources() {
++        let doubao = OnboardingVoiceTool.doubao.preferredInputSourceID
++        let weixin = OnboardingVoiceTool.weixin.preferredInputSourceID
++        let abc = "com.apple.keylayout.ABC"
++        #expect(OnboardingVoiceTool.nextChineseVoiceInputMethod(activeSourceID: doubao, lastUsed: .weixin) == .weixin)
++        #expect(OnboardingVoiceTool.nextChineseVoiceInputMethod(activeSourceID: weixin, lastUsed: .doubao) == .doubao)
++        #expect(OnboardingVoiceTool.nextChineseVoiceInputMethod(activeSourceID: abc, lastUsed: .doubao) == .weixin)
++        #expect(OnboardingVoiceTool.nextChineseVoiceInputMethod(activeSourceID: abc, lastUsed: .weixin) == .doubao)
++        #expect(OnboardingVoiceTool.nextChineseVoiceInputMethod(activeSourceID: abc, lastUsed: nil) == .doubao)
++    }
++
++    @Test func mapsTheSupportedG9N9NConsumerControls() {
++        #expect(ChromecastHIDControlMap.controls[0x041] == .select)
++        #expect(ChromecastHIDControlMap.controls[0x042] == .up)
++        #expect(ChromecastHIDControlMap.controls[0x043] == .down)
++        #expect(ChromecastHIDControlMap.controls[0x044] == .left)
++        #expect(ChromecastHIDControlMap.controls[0x045] == .right)
++        #expect(ChromecastHIDControlMap.controls[0x223] == .home)
++        #expect(ChromecastHIDControlMap.controls[0x224] == .back)
++        #expect(ChromecastHIDControlMap.controls[0x077] == .youtube)
++        #expect(ChromecastHIDControlMap.controls[0x078] == .netflix)
++        #expect(ChromecastHIDControlMap.controls[0x0e2] == .mute)
++        #expect(ChromecastHIDControlMap.controls[0x0e9] == .volumeUp)
++        #expect(ChromecastHIDControlMap.controls[0x0ea] == .volumeDown)
++        #expect(ChromecastHIDControlMap.nativeSources.count == 12)
++        #expect(ChromecastHIDControlMap.nativeSources.allSatisfy { $0 >> 32 == 0x0c })
++        #expect(Set(ChromecastHIDControlMap.controls.values.map(\.remoteButton)) ==
++            Set(ChromecastHIDControlMap.displayOrder))
++    }
++
++    @Test func requiresTheChromecastPnPIdentity() {
++        #expect(ChromecastVoiceBridge.matchesPnPID(Data([1, 0xD1, 0x18, 0x50, 0x94, 0x10, 1])))
++        #expect(ChromecastVoiceBridge.matchesPnPID(Data([2, 0xD1, 0x18, 0x50, 0x94, 0x10, 1])))
++        #expect(!ChromecastVoiceBridge.matchesPnPID(Data([0, 0xD1, 0x18, 0x50, 0x94, 0x10, 1])))
++        #expect(!ChromecastVoiceBridge.matchesPnPID(Data([2, 0x17, 0x27, 0xB8, 0x32, 0, 0])))
++        #expect(!ChromecastVoiceBridge.matchesPnPID(Data([2, 0xD1, 0x18, 0x50, 0x94])))
++    }
++
++    @Test func holdToTalkKeepsTailAudioAndAllowsAnotherPress() {
++        let session = ChromecastVoiceSession()
++        var writes: [Data] = []
++        var events: [String] = []
++        var sampleGenerations: [Int] = []
++        session.onWrite = { writes.append($0) }
++        session.onStart = { events.append("start") }
++        session.onSamples = { samples, generation in
++            events.append("audio:\(samples.count)")
++            sampleGenerations.append(generation)
++        }
++        session.onStop = { events.append($0.logToken) }
++
++        #expect(session.acceptCapabilities(Data([0x0B, 1, 0, 2, 3, 0, 4])))
++        session.control(Data([0x08]), now: 0)
++        session.control(Data([0x04, 0x03, 0x02, 0x10]), now: 0.01)
++        session.audio(Data([1, 2, 3, 4]), now: 0.02)
++        session.control(Data([0x00, 0x02]), now: 2)
++        session.audio(Data([5, 6]), now: 2.02)
++        session.drain(now: 2.2)
++        session.audio(Data([7, 8]), now: 2.3)
++        session.control(Data([0x04, 0x03, 0x02, 0x11]), now: 3)
++        session.audio(Data([1, 2, 3, 4]), now: 3.02)
++        session.cancel(reason: "disconnect", now: 3.05)
++
++        #expect(writes.isEmpty)
++        #expect(sampleGenerations == [1, 1, 2])
++        #expect(events == [
++            "start", "audio:8", "audio:4", "hold_release",
++            "start", "audio:8", "cancelled.disconnect",
++        ])
++    }
++
++    @Test func syncAndReleaseKeepRemaindersAfterAFullHardwareFrame() {
++        let session = ChromecastVoiceSession()
++        var batches: [[Int16]] = []
++        var reasons: [ChromecastVoiceEndReason] = []
++        session.onSamples = { samples, _ in batches.append(samples) }
++        session.onStop = { reasons.append($0) }
++
++        #expect(session.acceptCapabilities(Data([0x0B, 1, 0, 2, 3, 0, 160])))
++        session.control(Data([0x04, 3, 2, 0x10]), now: 0)
++        session.audio(Data(repeating: 0, count: 173), now: 0.02)
++        session.control(Data([0x0A, 0, 0, 0, 0, 9, 0]), now: 0.03)
++        session.audio(Data(repeating: 0, count: 165), now: 0.04)
++        session.control(Data([0, 2]), now: 0.05)
++        session.drain(now: 0.18)
++
++        #expect(batches.map(\.count) == [320, 26, 320, 10])
++        #expect(batches[2].first == 9)
++        #expect(reasons == [.holdRelease])
++    }
++
++    @Test func dailyUseFollowsTheSelectedChineseInputMethod() {
++        #expect(OnboardingVoiceTool.chromecastTypingTool(
++            activeSourceID: OnboardingVoiceTool.weixin.preferredInputSourceID, fallback: .doubao
++        ) == .weixin)
++        #expect(OnboardingVoiceTool.chromecastTypingTool(
++            activeSourceID: OnboardingVoiceTool.doubao.preferredInputSourceID, fallback: .weixin
++        ) == .doubao)
++        #expect(OnboardingVoiceTool.chromecastTypingTool(
++            activeSourceID: "com.apple.keylayout.ABC", fallback: .weixin
++        ) == .weixin)
++    }
++
++    @Test func voiceOnboardingKeepsTheConnectionAndTranscriptionRequirements() {
++        let sources = OnboardingBuildCapabilities.availableControlSources(siriRemotePackageInstalled: false)
++        #expect(OnboardingControlSourceVisibilityPolicy.visibleSources(sources).contains(.chromecastRemote))
++        #expect(OnboardingControlSource.chromecastRemote.supportedGestureModes == [.hold])
++        for tool in [OnboardingVoiceTool.doubao, .weixin] {
++            let plan = OnboardingVoicePairingPlan.resolve(
++                tool: tool, controlSource: .chromecastRemote, preferredGesture: .toggle, forceFunctionKey: true
++            )
++            #expect(plan?.binding.gestureMode == .hold)
++            #expect(plan?.binding.shortcut == .function)
++            #expect(plan?.chromecastVoiceMode == .hold)
++        }
++
++        var capabilities = OnboardingCapabilities()
++        #expect(!OnboardingFlowPolicy.canContinue(
++            from: .remote, voiceTool: .doubao, controlSource: .chromecastRemote, capabilities: capabilities
++        ))
++        capabilities.remoteConnected = true
++        #expect(OnboardingFlowPolicy.canContinue(
++            from: .remote, voiceTool: .doubao, controlSource: .chromecastRemote, capabilities: capabilities
++        ))
++        #expect(!OnboardingFlowPolicy.canContinue(
++            from: .remote, voiceTool: .doubao, controlSource: .xiaomiRemote, capabilities: capabilities
++        ))
++        #expect(!OnboardingFlowPolicy.canContinue(
++            from: .voiceTest, voiceTool: .doubao, controlSource: .chromecastRemote, capabilities: capabilities
++        ))
++    }
++}
++#endif
+diff --git a/feature/first-run-onboarding/PRODUCT_SPEC.md b/feature/first-run-onboarding/PRODUCT_SPEC.md
+index b13c99f..b9a187f 100644
+--- a/feature/first-run-onboarding/PRODUCT_SPEC.md
++++ b/feature/first-run-onboarding/PRODUCT_SPEC.md
+@@ -139,7 +139,7 @@ Onboarding 不负责：
+ - 流程必须保存进入前的 Siri Remote 启用状态，并在退出续接时保留。完成前，仅在本次临时启用且会员权益不足时停用；原本已启用、会员或有效离线租约均保持原状态。页面必须说明试用与日常使用的区别。
+ - 支持多种语音手势的来源必须让用户明确选择按住或按一次；来源上报实际模式时以本次会话事实为准。
+ - 已经由生产状态确认主设备可用时可以预选对应实体设备，但仍保留本页供用户确认，不能为判断而提前触发权限或扫描。
+-- Onboarding 控制来源页必须隐藏 Chromecast 选项。Chromecast 的运行时实现、持久化值和兼容代码必须保留，隐藏只适用于本次 Onboarding 选择界面。
++- 正式发行的 Onboarding 控制来源页继续隐藏 Chromecast 选项。本机公开候选仅在显式启用 `SAYALL_PUBLIC_CHROMECAST_VOICE=1` 时显示 Chromecast G9N9N，按住语音键采音，完成真实语音和文字验证后进入完成页；受支持的普通键映射在完成引导后的设置页提供。Chromecast 的运行时实现、持久化值和兼容代码必须保留，隐藏只适用于本次 Onboarding 选择界面。
+ 
+ #### 选择语音工具
+ 
+diff --git a/feature/first-run-onboarding/platform-macos.md b/feature/first-run-onboarding/platform-macos.md
+index 2a33e2f..3d3eb27 100644
+--- a/feature/first-run-onboarding/platform-macos.md
++++ b/feature/first-run-onboarding/platform-macos.md
+@@ -73,6 +73,7 @@
+ - 实体卡片在 4 行场景使用紧凑高度，目标 `84pt`，最多 `88pt`；型号名称保持单行，4 行、“更多控制方式”和“继续”必须在 `1020 × 772` 首屏可见，左栏不依赖内部滚动。
+ - “推荐”标识放在“实体遥控器”分组标题旁，不在单个型号卡片上重复或暗示只推荐其中一个型号。
+ - 小米与两代苹果遥控器显著展示；Chromecast、iPhone / Apple Watch 和 Web 收入默认折叠的“更多控制方式”。实体卡片和右栏使用所选设备真实图片。
++- 本机公开候选显式启用 `SAYALL_PUBLIC_CHROMECAST_VOICE=1` 时，实体设备区显示 Chromecast G9N9N。连接步骤要求 ATVV 链路就绪，语音测试要求按住、收到样本、释放和真实第三方文字上屏。语音验证后直接进入完成页，受支持的普通键映射在设置页提供。
+ - 选择小米型号后，连接、普通按键、语音和完成门禁都只认该型号档案。另一只已连接的小米遥控器不能代替通过，也不得因为它的按键或语音把当前选择切走。
+ - 选择 RC001 时，如果本机已有 RC001 档案，必须直接对该档案发起定向重连；没有档案时启动 discovery，等待用户唤醒正确遥控器。不得只因为 RC003 已连接就显示“已连接”。
+ - 新发现的档案在 DIS 更新型号前可以暂存第一份普通按键证据，但型号确认前不能通过连接门禁；确认型号与所选型号一致后才计入，确认是另一型号时丢弃。
+diff --git a/scripts/build-app.sh b/scripts/build-app.sh
+index 75e7802..e1d1c78 100755
+--- a/scripts/build-app.sh
++++ b/scripts/build-app.sh
+@@ -778,6 +778,9 @@ fi
+ plutil -remove SayAllChromecastIncluded "$APP_DIR/Contents/Info.plist" 2>/dev/null || true
+ plutil -insert SayAllChromecastIncluded -bool "$SAYALL_CHROMECAST_INCLUDED" \
+   "$APP_DIR/Contents/Info.plist"
++if [[ "${SAYALL_PUBLIC_CHROMECAST_VOICE:-0}" == 1 && "$SAYALL_BUILD_CHANNEL" == public ]]; then
++  plutil -insert SayAllPublicChromecastVoice -bool true "$APP_DIR/Contents/Info.plist"
++fi
+ if [[ "$RELEASE_VARIANT" == "intel" ]]; then
+   plutil -replace LSMinimumSystemVersion -string "$RELEASE_MIN_SYSTEM_VERSION" \
+     "$APP_DIR/Contents/Info.plist"

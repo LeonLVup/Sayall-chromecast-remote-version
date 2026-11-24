@@ -1,257 +1,76 @@
-# SayAll
+# Dictate on your Mac with a Chromecast remote
 
 [简体中文](README.md)
 
-[Website](https://sayall.app/en/) · [Setup tutorial](https://sayall.app/en/tutorial/) · [Weibo](https://weibo.com/getSayAll)
+Connect the Google remote to your Mac, **hold its microphone button to speak, and release it to turn your voice into text** with Doubao Input Method or WeType. You can also assign Mac shortcuts to the direction, Select, and side volume buttons.
 
-<p>
-  <a href="https://github.com/HD838A/remote-mic-app/stargazers">
-    <img src="https://img.shields.io/github/stars/HD838A/remote-mic-app?style=social" alt="GitHub Stars">
-  </a>
-</p>
+[**Download the Mac app (434 preview)**](https://github.com/LeonLVup/Sayall-chromecast-remote-version/releases/download/v2.0.9-chromecast.434/Chromecast-Remote-macOS-2.0.9-434-arm64.zip) · [Release notes and source](https://github.com/LeonLVup/Sayall-chromecast-remote-version/releases/tag/v2.0.9-chromecast.434)
 
-<table>
-  <tr>
-    <td align="center">
-      <a href="Screenshots/douyin-sayall.jpg"><img src="Screenshots/douyin-sayall.jpg" alt="SayAll.App Douyin QR code for GetSayAll" width="220"></a><br>
-      <strong>Douyin · GetSayAll</strong><br>
-      Save this image, then scan it in Douyin
-    </td>
-    <td align="center">
-      <a href="Screenshots/xhs-sayall.jpg"><img src="Screenshots/xhs-sayall.jpg" alt="SayAll Xiaohongshu QR code" width="220"></a><br>
-      <strong>Xiaohongshu</strong><br>
-      Scan to follow SayAll
-    </td>
-  </tr>
-</table>
+## Will it work with my devices?
 
-## Video introduction
+- **Remote**: The Google Voice Remote that came with Chromecast with Google TV, model **G9N9N**. Check the label inside the battery compartment. The Google TV Streamer remote and other models have not been verified.
+- **Mac**: An Apple silicon Mac running **macOS 14 or later**. Check the chip and macOS version under **Apple menu → About This Mac**.
+- **Input method**: Dictation was tested with **Doubao Input Method** and **WeType** (WeChat Input Method). You will also need a compatible virtual microphone, as described below.
 
-“Possibly the least tool-like tool I have used lately” shows how SayAll App turns a Bluetooth voice remote into a new way to express ideas, control your Mac, and work with AI. The video is in Chinese.
+## Download and open
 
-<p align="center">
-  <a href="https://www.bilibili.com/video/BV13Pep6BEXe">
-    <img src="Screenshots/video-introduction-cover.jpg" alt="Video cover for Possibly the least tool-like tool I have used lately" width="960">
-  </a>
-</p>
+1. Click **Download the Mac app** above. The file name ends in **arm64.zip**. The **Source code** and **source.tar.gz** files on the release page are for readers who want to inspect or build the software.
+2. Double-click the ZIP in Downloads. Move **Chromecast Remote for Mac.app** to Applications and open it.
+3. Build 434 is an ad hoc signed preview without Apple notarization. If macOS says it cannot verify the developer, confirm you downloaded it from the release page above and see [Apple’s instructions for opening apps](https://support.apple.com/en-us/102445).
 
-<p align="center"><a href="https://www.bilibili.com/video/BV13Pep6BEXe">Click the cover or watch the original video on Bilibili</a></p>
+The download is ready to try without Terminal, Xcode, or compiling. The build 434 archive and signature were verified. Dictation was tested with the earlier local build.
 
-Video by [可乐不甜的跑焦日记](https://space.bilibili.com/327214328)
+## Set up dictation
 
-> 3D-printed Xiaomi Bluetooth Remote 2 Pro shell by the same creator: [View it on MakerWorld](https://makerworld.com.cn/zh/models/2965815-vibegrip-ma-shang-wo-wei-vibe-coding-zuo-de-xiao-m?appSharePlatform=sayall.app)
+1. **Pair the remote.** Go to **System Settings → Bluetooth** on the Mac and connect the Chromecast remote. If it does not appear, hold **Back and Home** together until the light pulses and look again. Select it on the app’s connection page and grant Bluetooth, Input Monitoring, and Accessibility permissions when prompted. Quit and reopen the app after granting permissions. [Google pairing instructions](https://support.google.com/chromecast/answer/10109990)
+2. **Select the same virtual microphone.** It passes the remote audio to the input method. If your Mac already shows **MiRemoteV 2ch**, you can use it. Otherwise, see the [upstream virtual microphone setup](https://github.com/HD838A/remote-mic-app/blob/0e10dc16890afdc3b9c8bb007671a27ff44e0e13/Resources/豆包输入法兼容说明.en.md). A new installation following that guide shows **SayAll** as the device name. Choose the **same device** for the app’s audio output and the input method’s microphone. The virtual microphone is installed separately from the app ZIP.
+3. **Try a sentence.** Set the input method’s hold-to-talk shortcut to **Fn** and turn off the global voice shortcuts in Doubao and WeType. Switch to the input method you want, click in a blank note, hold the **remote’s microphone button**, say a sentence, and release. If you use Doubao’s hands-free mode, assign it a different shortcut, such as Right Option.
 
-## Windows version
+If the button responds but no text appears, check that the audio devices match and the cursor is in an editable field. In QuickTime Player, you can choose **File → New Audio Recording**, select the same microphone, and check whether its input level moves while you hold the remote’s microphone button and speak. [Report an issue](https://github.com/LeonLVup/Sayall-chromecast-remote-version/issues)
 
-The first Windows preview of SayAll is now available, focusing on the essential features:
+## How is this different from SayAll?
 
-- Supports Xiaomi Bluetooth Remote 2 and 2 Pro.
-- Voice input currently supports only WeChat Input Method.
-- The voice-input shortcut is `Ctrl + Win`.
+- This version adds a **G9N9N** layout and hold-to-talk support. You can customize **12 buttons**, including the four directions, Select, Back, Volume Up and Down, Home, Mute, YouTube, and Netflix.
+- To switch between Doubao and WeType with Netflix, open **Buttons → Netflix → Single Click → System & Media** and select **Switch Between Doubao and WeType**. It switches between those two even if you use ABC in between.
+- This preview has its own app name and icon. It uses a separate app identity and has upstream updates disabled. Your selected input method handles speech-to-text.
 
-You are welcome to try it. In principle, the Windows version of SayAll should not trigger warnings from game anti-cheat or antivirus software. If you have concerns, scan the source code with an AI tool before installing it.
+## Upstream acknowledgments
 
-[Download the Windows preview](https://github.com/GetSayAll/remote-mic-app-windows/releases/)
+Thanks to [HD838A](https://github.com/HD838A) for creating and maintaining SayAll. This third-party adaptation builds on its public code. [Original project HD838A/remote-mic-app](https://github.com/HD838A/remote-mic-app)
 
-iOS release: [SayAll on the App Store](https://apps.apple.com/app/sayall/id6797208067)
+## Source and license
 
-The Mac app continues to be distributed directly. Mac App Store submission is paused, while the current App Store launch focus is the iOS app and its Apple Watch app.
+The build 434 release includes the corresponding source archive. See `CHROMECAST-BUILD.md` inside the archive for build instructions. The patch is licensed under GPL-3.0-only. The public Chromecast voice implementation builds on [upstream PR #876](https://github.com/HD838A/remote-mic-app/pull/876). [GPL license](LICENSE.md) · [Copyright](COPYRIGHT.md) · [Upstream icon license](LOGO-LICENSE.md) · [Third-party notices](THIRD_PARTY_NOTICES.md)
 
-![SayAll — a voice remote for Vibe Coding](Screenshots/Remote-Mic-Introduce-1.png)
+<details>
+<summary>For developers: apply the patch and build</summary>
 
-**SayAll does more than listen. It also acts and helps you remember.**
+Use an Apple Silicon Mac running macOS 14 or later and an Xcode toolchain with Swift 6.2 or later. For unit tests, select a full Xcode installation with Swift Testing.
 
-**Speak to type. Press once to do more. Revisit what you said.**
+```bash
+git clone https://github.com/LeonLVup/Sayall-chromecast-remote-version.git
+git clone https://github.com/HD838A/remote-mic-app.git
+cd remote-mic-app
+git switch --detach 0e10dc16890afdc3b9c8bb007671a27ff44e0e13
+git apply --check ../Sayall-chromecast-remote-version/sayall-chromecast-source.patch
+git apply ../Sayall-chromecast-remote-version/sayall-chromecast-source.patch
 
-SayAll is a macOS app that turns a compatible Bluetooth voice remote into a wireless microphone for your Mac. It starts with effortless voice input, then connects common actions, app-specific button profiles, and the words you explicitly choose to keep.
+SAYALL_PRIVATE_PLATFORM_MODE=public SAYALL_PUBLIC_CHROMECAST_VOICE=1 \
+  xcrun swift build --disable-keychain --product RemoteMic
+```
 
-SayAll is built natively with SwiftUI. While running in the background, it uses less than 0.5% CPU and around 50 MB of memory—lighter than a single Chrome tab.
+To package an app for local testing, first replace `Resources/AppIcon.png`, `Resources/AppIcon.icns`, `Resources/AppIcons/standard.png`, and `Resources/AppIcons/faceted-duck.png` with artwork you have the right to use. Use a distinct app name and bundle identifier and disable the upstream update feed to keep the test build separate from the official app and its updates. Then run the following in the patched source tree.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="Screenshots/connection-and-voice-dark-en.png">
-  <img alt="Connection and Voice settings" src="Screenshots/connection-and-voice-en.png">
-</picture>
+```bash
+# Use a bundle identifier you control.
+plutil -replace CFBundleIdentifier -string org.example.ChromecastRemoteTest Resources/Info.plist
+plutil -replace SUEnableAutomaticChecks -bool false Resources/Info.plist
+plutil -remove SUFeedURL Resources/Info.plist
 
-## SayAll does more than listen
+SAYALL_BUILD_CHANNEL=public SAYALL_PRIVATE_PLATFORM_MODE=public \
+  SAYALL_PUBLIC_CHROMECAST_VOICE=1 ./scripts/build-app.sh
+```
 
-### Speak to type
+The app bundle is written to `dist/SayAll.app`. Use it as a separate local test app so that it does not overwrite an existing installation.
 
-Hold to speak and release to stop. Add text to the app you are using without interrupting a meeting or pausing your music. SayAll does not automatically change the Mac's default input or output devices.
-
-### Press once to do more (new capability, real-world validation in progress)
-
-Action sequences can run several supported local steps in order, then bind them to a click, double-click, or long press. They are designed for stable, repeatable workflows—not arbitrary scripts, unlimited automation, or remote execution.
-
-### The right controls for each app (candidate capability)
-
-One remote can keep multiple complete button profiles. Switch them manually or explicitly enable matching by the active app; unmatched apps return to the default profile. Full validation with physical remotes and third-party apps is still in progress.
-
-### Revisit what you said (candidate capability awaiting full voice validation)
-
-After you enable Revisit, SayAll keeps only final text entered through SayAll and organizes it by app and date on this Mac. Local Agent Access can then create separate, revocable, read-only MCP authorization for each AI client.
-
-- Revisit and Local Agent Access are off by default.
-- No audio, complete conversations, other people's replies, or surrounding text is stored.
-- There is no cloud sync or cross-device sync.
-- MCP uses local `stdio` and opens no HTTP or TCP listener.
-- SayAll does not upload Revisit data, but a third-party AI client may send retrieved text to its cloud model.
-
-## Requirements
-
-Common Phrases and Apple Siri Remote support require membership. For Siri Remote, install its component through the PKG first. Then enable it in the app with valid membership access. Installing the component does not enable it automatically.
-
-- Apple Silicon Mac with macOS 14 or later, or Intel Mac with macOS 13 or later
-- Xiaomi Bluetooth Remote 2 or 2 Pro
-- For voice input, install the compatible microphone included with the installer, or use an existing loopback device such as BlackHole 2ch.
-
-## Download and install
-
-- Backup download: [Baidu Netdisk](https://pan.baidu.com/s/1yuBRBCDEWnnwfzbxye5rnQ?pwd=9qhx). Access code: `9qhx`.
-
-- Setup tutorial: [Open the website tutorial](https://sayall.app/en/tutorial/).
-
-- Latest stable release (Apple Silicon): download it through the permanent [Cloudflare CDN entry](https://download.sayall.app/mac). The current stable entry provides only the Apple Silicon package and does not change between versions.
-- Latest pre-release (Apple Silicon / Intel): open [GitHub Releases](https://github.com/HD838A/remote-mic-app/releases), find the newest macOS candidate marked **Pre-release** in the release list, and download the Installer PKG for your Mac architecture.
-
-Release assets use the version and Build in their names: `SayAll-VERSION-BUILD-AppleSilicon-install.pkg` for Apple Silicon and `SayAll-VERSION-BUILD-Intel-install.pkg` for Intel. They are not interchangeable. The matching uninstallers are `SayAll-VERSION-BUILD-AppleSilicon-uninstall.pkg` and `SayAll-VERSION-BUILD-Intel-uninstall.pkg`.
-
-Run the matching Installer PKG. It installs **SayAll.app** and checks the existing MiRemoteV 2ch. A healthy compatible driver is kept in place; a missing or unusable driver is installed or updated. The installer shows the same privacy policy as the official website after the Introduction; you must complete that system confirmation before installation can continue. Advanced users who need only the app can download the app-only ZIP from the same Release.
-
-Starting with v1.3.0, official release packages are signed with an Apple Developer ID and notarized by Apple. Download through the official Cloudflare CDN entry, this project's GitHub Releases, or the Baidu Netdisk backup link above. Verify the GitHub asset digest or the PKG signature.
-
-## First use
-
-1. Turn on Bluetooth in System Settings.
-2. Hold the remote Home and Menu buttons together to enter pairing mode.
-3. Pair the device named MI RC, Xiaomi Bluetooth Remote 2 Pro, or 小米蓝牙语音遥控器.
-4. Launch SayAll and grant Bluetooth access when asked.
-5. To customize ordinary buttons, also grant Input Monitoring and Accessibility (new name: Device Control and Data Access). Restarting the app is required only after changing those macOS permissions.
-
-Device cards in **Connection & Voice** and **Button Mapping** prefer the custom name from macOS Bluetooth settings. Duplicate names are numbered from 1; unnamed devices keep their existing model numbering. After renaming, return to SayAll or reopen the relevant page to refresh. Offline devices keep their last known name. System name synchronization currently covers Xiaomi and Apple remotes; standalone system API checks have passed on A2854, while full compatibility of the candidate app still awaits validation.
-
-The menu bar icon is dimmed when no device is connected and remains clickable. An active connection from a physical remote, iPhone, Apple Watch, or web remote restores its normal appearance; voice transmission uses the active icon. Hover to read the current status. A connection does not mean audio or input permissions are ready.
-
-By default, SayAll shows both its Dock and menu bar icons at launch.
-
-- Click the Dock icon to open Settings.
-- Left-click or right-click the menu bar icon to show the same status menu.
-- Open the menu to see the remote’s battery level below the connection status. When several remotes are connected, the menu identifies each reading by name.
-- Choose **Open Main Window…** at the top to open or activate the main window. Connection status, reconnect, logs, About, version, update, GitHub, language, and Quit actions remain below it.
-
-SayAll opens its main window by default on ordinary launches. The **About** page at the bottom of the Settings sidebar provides version, update, version history, glossary, GitHub, language, Dock display, and launch controls. Turn off **Open main window at launch** to start in the background. SayAll still opens the main window after an update or when both icons are disabled. Turn off **Show app icon in the Dock** to hide the icon after closing the main window. Reopen the window from the menu bar to show the Dock icon again. macOS manages icons pinned in the Dock.
-
-**App Language** displays **System Default**, **简体中文**, and **English** together. The settings window, status text, menu, and built-in help follow the selection. System permission prompts and third-party panels continue to use the language selected by macOS when they are next opened.
-
-The app checks for updates once per day and asks before installing a newer version; it does not silently download or install updates. **Check for Updates…** is available from both the About page and the right-click menu. **Check for pre-release updates** on the About page is off by default; when enabled, automatic and manual checks also include the latest GitHub pre-release candidate. Sparkle updates the app bundle only; the compatible microphone driver is managed by the standalone Installer PKG. If an older installation still uses the Remote Mic.app or 无线麦.app path, an in-app update keeps that existing path. Run a new Installer PKG once to migrate it to the canonical SayAll.app filename.
-
-## Use voice input
-
-1. Open **Connection & Voice**.
-2. Select **Refresh Audio Devices**.
-3. Select **MiRemoteV 2ch**, or another loopback device you already installed.
-4. Choose the same device as the microphone in the app that receives dictation or voice input.
-5. Click the target text field, hold the remote voice button to speak, then release it to finish.
-
-Under **Button Mapping**, the voice-button area lets you choose the default Fn/Globe behavior, a Left Command hold, a Right Command hold, or a Right Option hold. Modifier-key modes require SayAll Accessibility (new name: Device Control and Data Access) permission and press the selected key when voice starts, then release it when voice ends. The target voice app must support that standalone key; many apps merge both sides into a generic modifier, so verify the target app directly. Pressing another key while the modifier is held may trigger a modifier shortcut. Right Option is the least-used modifier, making it a good dedicated voice trigger, and several voice input tools accept it as their trigger key.
-
-Fn remains the default because it directly matches Fn-hold voice entry in apps such as Doubao and Weixin, Fn-tap entry in Typeless, and the remote's hold-to-capture/release-to-stop lifecycle. F18, F19, F20, or other uncommon keys could be added technically, but this version does not offer an arbitrary voice-key binding: the target voice app must use the same key, and RC003, iPhone, Apple Watch, Web, permissions, and input-source switching must all share one paired press/release lifecycle. Ordinary remote buttons can still use F1–F20 shortcuts.
-
-The voice button has no single-tap, double-tap, or long-press side effects. It is reserved for the low-latency press-to-start and release-to-stop voice session. To focus the frontmost app's input field, choose **Focus Input Field** under a normal button's **Custom Actions**; it uses macOS Accessibility and never reads the field contents.
-
-To confirm the audio path, send a one-second test tone or inspect input level in QuickTime Player's **New Audio Recording** window.
-
-### Typeless compatibility
-
-Tap-to-toggle voice tools such as Typeless are incompatible with the Xiaomi Bluetooth Remote 2 and 2 Pro's default Fn-hold behavior. Enable **Simulate Fn Tap on Voice Key** in the voice-button area under **Button Mapping** to send one Fn tap when the voice stream starts and a matching tap after queued audio drains. Typeless and SayAll must still select the same loopback device, and SayAll needs Accessibility (new name: Device Control and Data Access) permission.
-
-You must still **hold the Xiaomi Bluetooth Remote 2 or 2 Pro voice key while speaking and release it to finish**. Both remote firmwares stop microphone audio when the key is released, so this is not continuous or hands-free recording. The mode is off by default; keep it off for Fn-hold tools such as Doubao Input Method. Missing permission or incomplete remote HID mapping automatically disables the mode and restores the default Fn-hold mapping.
-
-If Doubao Input Method cannot see an ordinary virtual microphone, install **MiRemoteV 2ch** with **Install SayAll.pkg**, then select it in SayAll. See the [Doubao Input Method Compatibility Guide](Resources/豆包输入法兼容说明.en.md).
-
-### Choosing the right mode for your remote and voice tool
-
-Remotes differ in how they record: the Xiaomi remote only records while held; the Chromecast voice remote also supports "tap once to start, tap once more to stop"; the Siri Remote adds a touch surface. Voice tools differ too: some record while a key is held, others toggle on a tap. Mismatched pairs show up as "pressing once to stop does not end recording" or "recording ends right after it starts".
-
-The capabilities of every remote and voice tool, and the mode each combination needs (including whether **Simulate Fn Tap on Voice Key** should be on), are listed in the [Remote and Voice Tool Capability Matrix](remote/遥控器与输入工具能力矩阵.md) (in Chinese).
-
-## Customize remote buttons
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="Screenshots/key-mapping-dark-en.png">
-  <img alt="Button mapping settings" src="Screenshots/key-mapping-en.png">
-</picture>
-
-Open **Button Mapping** and enable custom mapping to change direction, OK, Back, Home, Menu, TV, Power, and volume buttons.
-
-Each ordinary button supports a single-click action and optional double-click and long-press actions. Available actions include keyboard input, system volume, playback control, launching installed apps, focusing the frontmost input field, and custom keyboard shortcuts. A shortcut can be chosen from common combinations such as Copy, Paste, and Spotlight, assembled from an on-page standard keyboard with modifiers, F1–F20, navigation keys, a numeric keypad, or standalone left/right modifiers, or recorded from a physical keyboard as before.
-
-**Open Custom App** lets you select any local `.app`, then either open it only, send its focus shortcut after activation, or record a target input field once and focus it automatically. Re-record the target if an app update changes its interface. SayAll does not use fixed screen coordinates or save text from the input field.
-
-- Without double-click or long-press configuration, single-click keeps its immediate response and hold-to-repeat behavior.
-- A double-click waits about 0.3 seconds so the app can distinguish a single click.
-- A long press triggers after about 0.55 seconds and suppresses the single-click action.
-- Buttons with a configured double-click or long-press do not hold-repeat, preventing multiple actions from firing at once.
-
-The voice button is always reserved for voice input and does not participate in ordinary button mapping; choose Fn/Globe, Left Command, Right Command, or Right Option hold in its dedicated area.
-
-## Usage statistics
-
-The **Statistics** page shows remote button presses, voice duration, and the longest individual voice sessions for the selected day, week, or all-time range. All statistics stay on this Mac and are never uploaded.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="Screenshots/statistics-dark-en.png">
-  <img alt="SayAll usage statistics" src="Screenshots/statistics-en.png">
-</picture>
-
-## Local AI / Agent setup
-
-After explicit user consent, SayAll can expose local Reflections history as read-only data to Codex, Claude Code, Cursor, OpenCode, and other clients through the bundled Swift MCP Helper. No Node.js or development runtime is required.
-
-For AI-assisted installation, consent, client connection, and verification, give the agent the [AI Installation and MCP Setup Guide](AI_SETUP.en.md).
-
-## Permissions and privacy
-
-- Bluetooth: connect to the remote and receive voice.
-- Input Monitoring: identify ordinary remote buttons.
-- Accessibility (new name: Device Control and Data Access): send mapped button actions to the active app.
-
-SayAll does not upload or store voice, does not change the system default input or output device, and does not log voice content, Bluetooth addresses, or peripheral identifiers.
-
-## Uninstall
-
-1. Quit SayAll.
-2. Download and run the architecture-matching uninstaller whose name contains the current `VERSION-BUILD` from the same GitHub Release.
-
-The uninstaller also clears the Siri Remote component installation receipt and removes the current user's Dock item that points to the uninstalled app. It does not change or remove BlackHole, app settings, logs, history, or recordings.
-
-When installing over an older release, the installer recognizes legacy `/Applications/Remote Mic.app` and `/Applications/无线麦.app` bundles only when their bundle identifier is `com.hd838a.RemoteMic`. After the new **SayAll.app** has been installed and verified, matching legacy bundles are moved to Trash with collision-safe names so they remain recoverable. If Trash is unavailable, or a bundle at either legacy path is unrelated, it is left untouched.
-
-## Troubleshooting
-
-Read the [Troubleshooting Guide](TROUBLESHOOTING.en.md) first. The complete onboarding flow is in the [First-Install Guide](Resources/首次安装说明.en.md).
-
-Before developing any new feature, everyone—including the repository owner, maintainers, external contributors, and automated agents—must read and follow the canonical [New Feature Development Policy](FEATURE_DEVELOPMENT.md).
-
-For development, build, protocol, test, and release details, see the [Technical Documentation](TECHNICAL.en.md). Branch and pull-request management is defined in the [Branch and Commit Management Policy](BRANCH_MANAGEMENT.md).
-
-## ⭐ Star History
-
-<p align="center">
-  <a href="https://github.com/HD838A/remote-mic-app/stargazers">
-    <img src="https://raw.githubusercontent.com/HD838A/remote-mic-app/star-history/assets/star-history.svg" alt="Star History Chart" width="100%">
-  </a>
-</p>
-
-## License and sources
-
-The macOS app, driver, and related software code in this repository are GPL-3.0-only. The iOS app is now maintained in a separate private repository and continues to be distributed through the App Store link above. The macOS app logo and app icon are proprietary brand assets that require a separate grant; see [LOGO-LICENSE.en.md](LOGO-LICENSE.en.md). Full copyright and third-party information is available in [COPYRIGHT.en.md](COPYRIGHT.en.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
-The project was originally forked from [nijez/open-voice-bridge](https://github.com/nijez/open-voice-bridge) and is now maintained independently in this repository.
-
-The MiRemoteV 2ch naming and USB-transport compatibility approach for Doubao device enumeration were informed by [VincentKingHsu/MiRemoteVoice](https://github.com/VincentKingHsu/MiRemoteVoice) v1.0.0-beta.1 (MIT). This project does not reuse that project's binary replacement script. Instead, it independently derives MiRemoteV2ch.driver from [ExistentialAudio/BlackHole](https://github.com/ExistentialAudio/BlackHole) v0.7.1 at commit e2b22aaaba4e507a097131704bf96dabc004d9cf under GPL-3.0. The driver has a separate identity, coexists with BlackHole, and never overwrites or removes BlackHole files.
-
-## Other projects
-
-- [Vibe PPT Web Template](https://github.com/GetSayAll/vibe-ppt-web-template)
-- [Claude Code Config](https://github.com/HD838A/claude-code-config)
-- [DJI 4G Mac](https://github.com/HD838A/dji-4g-mac)
+</details>
